@@ -1,0 +1,8 @@
+"0",""
+"0","map <- leaflet() %>%"
+"0","  addTiles() %>%"
+"0","  setView(lng = -121.5, lat = 38.05, zoom = 9) %>% # Adjust center and zoom for the Legal Delta"
+"0","  addMarkers(lng = -121.5, lat = 38.05, popup = ""Central Delta Region"") %>% # Add specific points"
+"0","  addMarkers(lng = -121.7, lat = 38.3, popup = ""North Delta"") %>%          # Another example point"
+"0","  addMarkers(lng = -121.3, lat = 37.9, popup = ""South Delta"")               # Example points"
+"0","map"

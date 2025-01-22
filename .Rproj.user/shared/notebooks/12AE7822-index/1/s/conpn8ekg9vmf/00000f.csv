@@ -1,0 +1,7 @@
+"0","#need to take the average of all parameter_value for the date "
+"0","SouthDelta_waterTemp_monthly_average_F<-mean(SouthDelta_waterTemp_new$parameter_F, na.rm = T)"
+"0","SouthDelta_waterTemp_monthly_average_F"
+"1","[1]"
+"1"," 59.8561"
+"1","
+"
