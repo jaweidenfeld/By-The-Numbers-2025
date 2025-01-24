@@ -87,7 +87,13 @@ northern_pdf_text <- pdf_text(northern_pdf_file)
 #print(northern_pdf_text)
 
 ```
-###### Current Precipitation for Northern Sierra Region {style="color: darkblue"}
+
+#### Northern Sierra Region {style="color: darkblue"}
+
+###### Precipitation for Northern Sierra Region {style="color: darkblue"}
+
+Current precipitation
+
 ```{r}
 
 # Extract text from the PDF file
@@ -102,14 +108,14 @@ N_sierra_current_precip <- NULL
 
 # Search for the pattern in the text
 if (length(northern_pdf_text) > 0) {
-  for (sentence in northern_pdf_text) {
+  for (sentence in northern_pdf_text) { #sentence is a tempory placeholder for the term we are looking for
     match <- regexpr(pattern, sentence, perl = TRUE)
     if (match[1] != -1) {
       # Extract the number using the captured group
       northern_next_four <- regmatches(sentence, match)
       N_sierra_current_precip <- sub(pattern, "\\1", northern_next_four)
-      cat(paste("Current:", N_sierra_current_precip, "inches\n"))
-      break  # Stop the loop after finding the first match
+      cat(paste(N_sierra_current_precip, "inches\n"))
+      break  # Stop the loop after finding the first match of Current and the 4 numbers after it
     }
   }
 } else {
@@ -119,10 +125,7 @@ if (length(northern_pdf_text) > 0) {
 
 ```
 
-
-
-
-Northern Sierra Region: Percent of average rain for this date
+Percent of average rain for this date
 
 ```{r}
 # Create an empty vector to store the extracted value
@@ -164,7 +167,7 @@ if (length(northern_pdf_text) > 0) {
 
 #### Central Sierra {style="color: darkblue"}
 
-###### Current Precipitation for Central Sierra Region {style="color: darkblue"}
+###### Precipitation for Central Sierra Region {style="color: darkblue"}
 
 Current Precipitation for Central Sierra Region
 
@@ -195,24 +198,33 @@ print(central_pdf_text)
 ```
 
 ```{r}
-#create an empty vector 
+# Create an empty vector
 Central_current_precip <- c()
 
 # Adjusted pattern for "Current:"
 if (length(central_pdf_text) > 0) {
   for (sentence in central_pdf_text) {
+    # Pattern to match "Current:" and capture the 4 characters after it
     pattern <- "(?i)Current[:\\s]+(.{4})"
+    
+    # Extract the matched text
     next_four <- regmatches(sentence, regexpr(pattern, sentence, perl = TRUE))
+    
     if (length(next_four) > 0) {
-      # Append the value of next_four to the vector
-      Central_current_precip <- c(Central_current_precip, next_four)
-      cat(paste(next_four, "inches\n"))
+      # Extract only the captured group (the 4 characters) and not "Current:"
+      number_only <- sub(pattern, "\\1", next_four)
+      
+      # Append the value of number_only to the vector
+      Central_current_precip <- c(Central_current_precip, number_only)
+      
+      # Print only the number
+      cat(paste(number_only, "inches\n"))
     } else {
       cat("Next four characters after 'Current:' not found.\n")
     }
   }
 } else {
-  cat("No text extracted from the PDF.")
+  cat("No text extracted from the PDF.\n")
 }
 
 
@@ -555,14 +567,9 @@ cat(sprintf(" San Luis Reservoir: %.0f%% of average storage, %.0f%% of total cap
 
 ### San Luis Reservoir: `r SanLuis_percent_average_storage_value`% of average storage, `r SanLuis_percent_capacity_value`% of total capacity.
 
-
-
-
 ################### Flow Sacramento
 
 #collapsed code chunk makes a bad map of sacramento sensors
-
-
 
 ```{r}
 
@@ -577,6 +584,7 @@ map
 ```
 
 #Sacramento mean monthly flow
+
 ```{r}
 
 
@@ -643,7 +651,9 @@ message("File updated successfully with current month's data.")
 
 
 ```
-#  San Joaquin River at Vernalis Flow
+
+# San Joaquin River at Vernalis Flow
+
 ```{r}
 
 # File path to your Excel file (the one you just uploaded)
@@ -720,10 +730,10 @@ suppressMessages({
 
 ```
 
-
 #Total Delta Exports: 'total delta exports', average of (CVP + SWP)
 
 #### work in progress
+
 ```{r, echo=FALSE, results='hide', warning=FALSE, message=FALSE}
 
 
@@ -805,8 +815,6 @@ message("Delta Exports data updated successfully for the current month.")
 
 
 ```
-
-
 
 ##\*\*\* figure out way to add data from this year to historical after year ends #somethign that updates only on specific dates #Need to create a output csv file for historical data
 
