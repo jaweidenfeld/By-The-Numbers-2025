@@ -87,33 +87,29 @@ northern_pdf_text <- pdf_text(northern_pdf_file)
 #print(northern_pdf_text)
 
 ```
-
 ###### Current Precipitation for Northern Sierra Region {style="color: darkblue"}
-
 ```{r}
 
-#create an empty vector to store the extracted value of n. sierra current precip
-N_sierra_current_precip <- c()
-
 # Extract text from the PDF file
-#northern_pdf_text <- pdf_text(northern_pdf_file)
+northern_pdf_text <- pdf_text(northern_pdf_file)
 
-# Print the next four characters following "Current:" in each sentence
-#loops through all 'sentences in the pdf until it finds the correct word and numbers
-if (length(northern_pdf_text) > 0) { # makes sure there is text in the file, if no text then will go to else
+# Define the pattern to extract the number next to "Current:"
+pattern <- "(?i)Current:\\s?(.{4})"  #(.{4}) indicates that we are looking for 4 characters after 'Current'
+#?i indicates case sensitive for the word 'Current:' "\\s?" matches white space after 
+
+# Initialize a variable to store the extracted number
+N_sierra_current_precip <- NULL
+
+# Search for the pattern in the text
+if (length(northern_pdf_text) > 0) {
   for (sentence in northern_pdf_text) {
-    pattern <- "(?i)Current:\\s?(.{4})" #?i indicates case sensitive for the word 'Current:' "\\s?" matches white space after 
-    #(.{4}) indicates that we are looking for 4 characters after 'Current'
-    match <- regexpr(pattern, sentence, perl = TRUE) # this searches the current sentence for the 'pattern' above
-    if (match[1] != -1) { # where the pattern starts, we want it to start at the begining of 'Current'
+    match <- regexpr(pattern, sentence, perl = TRUE)
+    if (match[1] != -1) {
+      # Extract the number using the captured group
       northern_next_four <- regmatches(sentence, match)
-      # Extract the captured group (the four characters) and append to the vector
-      next_four <- sub(pattern, "\\1", northern_next_four)
-      N_sierra_current_precip <- c(N_sierra_current_precip, next_four)
-      # Print the formatted output as "Current: <next_four>"
-      cat(paste("Current:", next_four, "inches"))
-    } else {
-      cat("Next four characters after 'Current:' not found.")
+      N_sierra_current_precip <- sub(pattern, "\\1", northern_next_four)
+      cat(paste("Current:", N_sierra_current_precip, "inches\n"))
+      break  # Stop the loop after finding the first match
     }
   }
 } else {
@@ -121,9 +117,10 @@ if (length(northern_pdf_text) > 0) { # makes sure there is text in the file, if 
 }
 
 
-
-
 ```
+
+
+
 
 Northern Sierra Region: Percent of average rain for this date
 
