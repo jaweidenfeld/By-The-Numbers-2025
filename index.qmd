@@ -182,7 +182,7 @@ central_ppt_pdf_url <- "https://cdec.water.ca.gov/cgi-progs/products/PLOT_FSI.pd
 
 #pathway to where you want the pdf to be saved
 #can eventaully make the name of the pdf with the date it is downloaded
-central_ppt_pdf_file2<-"C:/Users/jweidenfeld/Desktop/Rprojects/By_The_Numbers/data_output/central_sierra2.pdf"
+central_ppt_pdf_file2<-"data_output/central_sierra2.pdf"
 
 # Download the PDF file
 
@@ -273,7 +273,7 @@ snow_pack_pdf_url <- "https://cdec.water.ca.gov/cgi-progs/products/swccond.pdf"
 
 #pathway to where you want the pdf to be saved
 #can eventaully make the name of the pdf with the date it is downloaded
-snow_pack_pdf_file<-"C:/Users/jweidenfeld/Desktop/Rprojects/By_The_Numbers/data_output/snow_pack.pdf"
+snow_pack_pdf_file<-"data_output/snow_pack.pdf"
 
 # Download the PDF file
 
