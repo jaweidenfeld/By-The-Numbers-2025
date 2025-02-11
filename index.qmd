@@ -569,9 +569,9 @@ cat(sprintf(" San Luis Reservoir: %.0f%% of average storage, %.0f%% of total cap
 
 ################### Flow Sacramento
 
-#collapsed code chunk makes a bad map of sacramento sensors
 
 ```{r}
+#map of sensors
 
 map <- leaflet() %>%
   addTiles() %>%
@@ -588,14 +588,10 @@ map
 ```{r}
 
 
-
 # File path to your Excel file
 sacramento_file_path <- "historical_data/historical_data_full.xlsx"
 
 # Determine the current month and year
-# %b is the month in short form
-# %Y is the year
-# Sys.Date() pulls the date from whatever system the program is on
 sacramento_current_month <- format(Sys.Date(), "%b")
 sacramento_current_year <- format(Sys.Date(), "%Y")
 
@@ -606,48 +602,61 @@ sacramento_workbook <- loadWorkbook(sacramento_file_path)
 sacramento_historical_data <- readWorkbook(sacramento_workbook, sheet = "Flow_Sac")
 sacramento_historical_data$Year <- as.character(sacramento_historical_data$Year) # Ensure Year is character
 
-# Calculate the new value you want to add (e.g., CFS average)
+# Define the start and end dates for the current month
 sacramento_start_date <- floor_date(Sys.Date(), "month")
 sacramento_end_date <- Sys.Date()
 
-# Query CDEC data for San Joaquin at Vernalis (station "VNS") for the current month
-# Assuming `cdec_query` returns a data frame with a "parameter_value" column
+# Query CDEC data for Sacramento at Freeport (station "FPT") for the current month
 sacramento_flow_daily <- cdec_query(station = "FPT", sensor_num = 20, 
-                                     dur_code = "H", start_date = as.character(sacramento_start_date), 
-                                     end_date = as.character(sacramento_end_date))
+                                    dur_code = "H", start_date = as.character(sacramento_start_date), 
+                                    end_date = as.character(sacramento_end_date))
 
+# Calculate the monthly average for Sacramento flow
+sacramento_export_monthly_average <- mean(sacramento_flow_daily$parameter_value, na.rm = TRUE)
 
-# Assume `sacramento_flow_daily` is generated from CDEC data query
-sacramento_current_month_CFS_average <- mean(sacramento_flow_daily$parameter_value, na.rm = TRUE)
+# Calculate the historical mean for the current month, if available in your data
+sacramento_current_month_historical_data <- sacramento_historical_data %>%
+  filter(Month == sacramento_current_month) %>%
+  select(Average_Flow_Daily)
+
+sacramento_current_month_historical_mean <- mean(sacramento_current_month_historical_data$Average_Flow_Daily, na.rm = TRUE)
+
+# Calculate the percentage of the current month’s average relative to the historical average
+sacramento_percentage_of_cfs_average <- (sacramento_export_monthly_average / sacramento_current_month_historical_mean) * 100
+
+# Print only the percentage result
+message(sprintf("Sacramento export monthly average is %.2f%% of the historical average for %s", 
+                sacramento_percentage_of_cfs_average, sacramento_current_month))
 
 # Check if there is an entry for the current month and year
 existing_entry <- sacramento_historical_data %>%
   filter(Month == sacramento_current_month, Year == sacramento_current_year)
 
-if (nrow(existing_entry) > 0) {
-  # Update the existing row with the new CFS average for the current month
-  row_to_update <- which(sacramento_historical_data$Month == sacramento_current_month & 
-                         sacramento_historical_data$Year == sacramento_current_year)
-  sacramento_historical_data[row_to_update, "Average_Flow_Daily"] <- sacramento_current_month_CFS_average
-} else {
-  # Create a new row with the current month, year, and average flow if it's a new month
-  new_row <- data.frame(
-    Month = sacramento_current_month,
-    Year = sacramento_current_year,
-    Average_Flow_Daily = sacramento_current_month_CFS_average
-  )
+suppressMessages({
+  if (nrow(existing_entry) > 0) {
+    # Update the existing row with the new flow average for the current month
+    row_to_update <- which(sacramento_historical_data$Month == sacramento_current_month & 
+                           sacramento_historical_data$Year == sacramento_current_year)
+    sacramento_historical_data[row_to_update, "Average_Flow_Daily"] <- sacramento_export_monthly_average
+  } else {
+    # Create a new row with the current month, year, and flow average if it's a new month
+    new_row <- data.frame(
+      Month = sacramento_current_month,
+      Year = sacramento_current_year,
+      Average_Flow_Daily = sacramento_export_monthly_average
+    )
+    
+    # Append the new row to the historical data
+    sacramento_historical_data <- bind_rows(sacramento_historical_data, new_row)
+  }
   
-  # Append the new row to the historical data
-  sacramento_historical_data <- bind_rows(sacramento_historical_data, new_row)
-}
+  # Write only the modified sheet back to the workbook
+  writeData(sacramento_workbook, sheet = "Flow_Sac", x = sacramento_historical_data)
+  
+  # Save the workbook, preserving all other sheets
+  saveWorkbook(sacramento_workbook, sacramento_file_path, overwrite = TRUE)
+})
 
-# Write only the modified sheet back to the workbook
-writeData(sacramento_workbook, sheet = "Flow_Sac", x = sacramento_historical_data)
-
-# Save the workbook, preserving all other sheets
-saveWorkbook(sacramento_workbook, sacramento_file_path, overwrite = TRUE)
-
-message("File updated successfully with current month's data.")
 
 
 ```
@@ -732,11 +741,7 @@ suppressMessages({
 
 #Total Delta Exports: 'total delta exports', average of (CVP + SWP)
 
-#### work in progress
-
 ```{r, echo=FALSE, results='hide', warning=FALSE, message=FALSE}
-
-
 
 # URL of the PDF file
 delta_exports_pdf_url <- "https://www.usbr.gov/mp/cvo/vungvari/doutdly.pdf"
@@ -759,18 +764,33 @@ delta_export_lines <- str_split(delta_export_last_page_text, "\n")[[1]]
 # Find the line containing the "Average" row
 delta_export_average_line <- delta_export_lines[str_detect(delta_export_lines, "Average")]
 
-# Print the line to verify the content and ensure we're targeting the right row
+# Print the extracted line for debugging
 print(delta_export_average_line)
 
-# Refine the regular expression to match specific numeric values, using longer patterns if possible
-delta_export_values <- str_extract_all(delta_export_average_line, "\\b\\d{4,5}\\b")[[1]]  # Look for 4- or 5-digit numbers
+# Split the line into individual elements (numbers & text) by whitespace
+str_split(delta_export_average_line, "\\s+")
 
-# Inspect extracted values to identify the target (in this case, 5259 is expected)
-print(delta_export_values)
+# Print the extracted elements to verify structure
+print(delta_export_numbers)
 
-# Assuming the correct index is known based on inspection, retrieve the value (e.g., 5259)
-average_delta_export_value <- as.numeric(delta_export_values[1])  # Adjust the index if necessary
+# Extract the 17th number (ensuring only numeric values are considered)
+numeric_values <- delta_export_numbers[str_detect(delta_export_numbers, "^\\d{1,5}[,\\.]?\\d*$")]  # Filter only numbers
+
+# Print extracted numeric values for debugging
+print(numeric_values)
+
+# Extract the 17th numeric value safely
+if (length(numeric_values) >= 14) {
+    average_delta_export_value <- as.numeric(gsub(",", "", numeric_values[14]))  # Remove commas & convert
+} else {
+    warning("Could not find the 17th numeric value. Check the PDF format.")
+    average_delta_export_value <- NA
+}
+
+# Print the final extracted value
 print(average_delta_export_value)
+
+
 
 # Excel file path and current date
 excel_file_path <- "historical_data/historical_data_full.xlsx"
