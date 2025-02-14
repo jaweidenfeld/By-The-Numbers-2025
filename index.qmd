@@ -42,7 +42,13 @@ library(openxlsx)
 
 library(geojsonio)
 
+#options(repos = c(
+   # sbashevkin = 'https://sbashevkin.r-universe.dev',
+  #  CRAN = 'https://cloud.r-project.org'))
 
+#install.packages("deltamapr")
+
+library(deltamapr)
 
 ```
 
@@ -569,7 +575,6 @@ cat(sprintf(" San Luis Reservoir: %.0f%% of average storage, %.0f%% of total cap
 
 ################### Flow Sacramento
 
-
 ```{r}
 #map of sensors
 
@@ -580,6 +585,14 @@ map <- leaflet() %>%
   addMarkers(lng = -121.7, lat = 38.3, popup = "North Delta") %>%          # Another example point
   addMarkers(lng = -121.3, lat = 37.9, popup = "South Delta")               # Example points
 map
+
+```
+
+```{r}
+
+#ggplot(WW_Delta)+
+ # geom_sf()+
+  #theme_bw()
 
 ```
 
@@ -741,7 +754,7 @@ suppressMessages({
 
 #Total Delta Exports: 'total delta exports', average of (CVP + SWP)
 
-```{r, echo=FALSE, results='hide', warning=FALSE, message=FALSE}
+```{r}
 
 # URL of the PDF file
 delta_exports_pdf_url <- "https://www.usbr.gov/mp/cvo/vungvari/doutdly.pdf"
@@ -755,100 +768,114 @@ download.file(delta_exports_pdf_url, delta_exports_pdf_file, mode = "wb")
 # Extract text from the PDF file
 delta_exports_pdf_text <- pdf_text(delta_exports_pdf_file)
 
-# Extract the last page's text, where the "Average" row appears
+# Extract the last page's text
 delta_export_last_page_text <- delta_exports_pdf_text[length(delta_exports_pdf_text)]
 
 # Split the text into lines
-delta_export_lines <- str_split(delta_export_last_page_text, "\n")[[1]]
+delta_export_lines <- str_split(delta_export_last_page_text, "\\n")[[1]]
 
 # Find the line containing the "Average" row
 delta_export_average_line <- delta_export_lines[str_detect(delta_export_lines, "Average")]
 
-# Print the extracted line for debugging
-print(delta_export_average_line)
+# Define delta_export_numbers before use
+delta_export_numbers <- str_split(delta_export_average_line, "\\s+")[[1]]
 
-# Split the line into individual elements (numbers & text) by whitespace
-str_split(delta_export_average_line, "\\s+")
+# Print extracted elements for debugging
+#print(delta_export_numbers)
 
-# Print the extracted elements to verify structure
-print(delta_export_numbers)
+# Extract numeric values
+numeric_values <- delta_export_numbers[str_detect(delta_export_numbers, "^\\d{1,5}[,\\.]?\\d*$")]
 
-# Extract the 17th number (ensuring only numeric values are considered)
-numeric_values <- delta_export_numbers[str_detect(delta_export_numbers, "^\\d{1,5}[,\\.]?\\d*$")]  # Filter only numbers
+# Print numeric values for debugging
+#print(numeric_values)
 
-# Print extracted numeric values for debugging
-print(numeric_values)
-
-# Extract the 17th numeric value safely
+# Extract the 17th numeric value
 if (length(numeric_values) >= 14) {
-    average_delta_export_value <- as.numeric(gsub(",", "", numeric_values[14]))  # Remove commas & convert
+    average_delta_export_value <- as.numeric(gsub(",", "", numeric_values[14]))
 } else {
-    warning("Could not find the 17th numeric value. Check the PDF format.")
+    warning("Could not find the 14th numeric value. Check the PDF format.")
     average_delta_export_value <- NA
 }
 
 # Print the final extracted value
-print(average_delta_export_value)
-
-
+#print(average_delta_export_value)
 
 # Excel file path and current date
-excel_file_path <- "historical_data/historical_data_full.xlsx"
+delta_export_file_path <- "historical_data/historical_data_full.xlsx"
 current_month <- format(Sys.Date(), "%b")
 current_year <- format(Sys.Date(), "%Y")
 
-# Load the workbook and the specific sheet
-delta_exports_workbook <- loadWorkbook(excel_file_path)
+# Load workbook and sheet
+delta_exports_workbook <- loadWorkbook(delta_export_file_path)
 delta_exports_data <- readWorkbook(delta_exports_workbook, sheet = "Total_Delta_Exports")
 
-# Ensure the Year column is character to match with the new data format
 delta_exports_data$Year <- as.character(delta_exports_data$Year)
 
-# Check if there's already an entry for the current month and year
+# Check for existing entry
 existing_entry <- delta_exports_data %>%
   filter(Month == current_month, Year == current_year)
 
 if (nrow(existing_entry) > 0) {
-  # Update the existing row with the new average Delta Exports value
-  row_to_update <- which(delta_exports_data$Month == current_month & 
+  row_to_update <- which(delta_exports_data$Month == current_month &
                          delta_exports_data$Year == current_year)
   delta_exports_data[row_to_update, "Exports"] <- average_delta_export_value
 } else {
-  # Add a new row if it's a new month
   new_row <- data.frame(
     Month = current_month,
     Year = current_year,
     Exports = average_delta_export_value
   )
-  
-  # Append the new row
   delta_exports_data <- bind_rows(delta_exports_data, new_row)
 }
 
-# Write the updated sheet back to the workbook
+# Write updated sheet back to the workbook
 writeData(delta_exports_workbook, sheet = "Total_Delta_Exports", x = delta_exports_data)
 
-# Save the workbook, preserving all sheets
-saveWorkbook(delta_exports_workbook, excel_file_path, overwrite = TRUE)
+# Save the workbook
+saveWorkbook(delta_exports_workbook, delta_export_file_path, overwrite = TRUE)
 
-message("Delta Exports data updated successfully for the current month.")
+####################
+
+# Determine the current month and year
+delta_export_current_month <- format(Sys.Date(), "%b")
+delta_export_current_year <- format(Sys.Date(), "%Y")
+
+# Load the entire workbook without overwriting other sheets
+delta_export_workbook <- loadWorkbook(delta_export_file_path)
+
+# Read the specific sheet you want to update
+delta_export_historical_data <- readWorkbook(delta_export_workbook, sheet = "Flow_SanJoaq")
+delta_export_historical_data$Year <- as.character(delta_export_historical_data$Year) # Ensure Year is character
+
+# Calculate the historical mean for the current month, if available in your data
+delta_export_current_month_historical_data <- delta_export_historical_data %>%
+  filter(Month == delta_export_current_month) %>%
+  select(Average_Flow_Daily)
+
+
+delta_export_current_month_historical_mean <- mean(delta_export_current_month_historical_data$Average_Flow_Daily, na.rm = TRUE)
+#delta_export_current_month_historical_mean
+
+
+# Calculate the percentage of the current month’s average relative to the historical average
+delta_export_percentage_of_cfs_average <- (average_delta_export_value / delta_export_current_month_historical_mean) * 100
+#delta_export_percentage_of_cfs_average
+
+
+#.2f specifies 2 digits after the decimal place, and f stands for floating point number - meaning the decimal point will be placed whereever it is needed
+#message(sprintf("Total Delta export monthly average is %.2f%% of the historical average for %s", 
+               # delta_export_percentage_of_cfs_average, delta_export_current_month))
+
+message(sprintf("Total Delta export (CVP + SWP) monthly average is %.2f%% of the historical average for %s.\nThe average CFS for %s %s is %.2f.\n",
+                delta_export_percentage_of_cfs_average,
+                delta_export_current_month,
+                delta_export_current_month,
+                delta_export_current_year,
+                average_delta_export_value))
 
 
 ```
 
-##\*\*\* figure out way to add data from this year to historical after year ends #somethign that updates only on specific dates #Need to create a output csv file for historical data
-
-```{r}
-# read_xlxs() by default reads in the first sheet. There may however be numerous sheets in the file. We can tell R which sheet to read in as well as how many lines to skip before reading in data
-
-#tells R to skip 6 lines and then read in the second sheet of an xlsx file
-#metadata<-read_xlsx("data/calenviroscreen/ces3results.xlsx", 
- #                     sheet = 2, 
-  #                    skip  = 6)
-
-#as of now data has to be added manually at the end of the year to the historical data set
-
-```
 
 ################################## Salinity
 
