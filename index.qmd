@@ -581,9 +581,9 @@ cat(sprintf(" San Luis Reservoir: %.0f%% of average storage, %.0f%% of total cap
 map <- leaflet() %>%
   addTiles() %>%
   setView(lng = -121.5, lat = 38.05, zoom = 9) %>% # Adjust center and zoom for the Legal Delta
-  addMarkers(lng = -121.5, lat = 38.05, popup = "Central Delta Region") %>% # Add specific points
-  addMarkers(lng = -121.7, lat = 38.3, popup = "North Delta") %>%          # Another example point
-  addMarkers(lng = -121.3, lat = 37.9, popup = "South Delta")               # Example points
+  addMarkers(lng = -121.27, lat = 37.68, popup = "San Joaquin River near Vernalis") %>% # Add specific gps points
+  addMarkers(lng = -121.7, lat = 38.45, popup = "Sacramento at Freeport") %>%          # Add specific gps points
+  addMarkers(lng = -121.3, lat = 37.9, popup = "Central Valley Project and State Water Project pumping station")               
 map
 
 ```
