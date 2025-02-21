@@ -65,24 +65,11 @@ Crucial to the Delta Watershed as it provides water for the Delta!
 
 ```{r}
 
-#URL of pdf file
-#assigns a string value to the url
+# Read PDF text directly from the URL without saving
 northern_pdf_url <- "https://cdec.water.ca.gov/cgi-progs/products/PLOT_ESI.pdf"
+northern_pdf_text <- pdf_text(northern_pdf_url)
 
-
-#file pathway to save the pdf 
-northern_pdf_file <- "data_output/northern_sierra.pdf"
-
-
-#saves file to specified destination
-# wb means 'write binary mode' used for things that are non-text files (ex: pdfs)
-download.file(northern_pdf_url, northern_pdf_file, mode = "wb")
-
-# Extract text from the PDF from the file location
-#returns it as a character vector
-northern_pdf_text <- pdf_text(northern_pdf_file)
-
-# Prints the extracted text (keep unchecked)
+#can print if want to debugg pdf
 #print(northern_pdf_text)
 
 ```
@@ -95,30 +82,37 @@ Current precipitation
 
 ```{r}
 
-# Extract text from the PDF file
-northern_pdf_text <- pdf_text(northern_pdf_file)
+# Read PDF text directly from the URL
+northern_pdf_url <- "https://cdec.water.ca.gov/cgi-progs/products/PLOT_ESI.pdf"
+northern_pdf_text <- pdf_text(northern_pdf_url)
 
-# Define the pattern to extract the number next to "Current:"
-pattern <- "(?i)Current:\\s?(.{4})"  #(.{4}) indicates that we are looking for 4 characters after 'Current'
-#?i indicates case sensitive for the word 'Current:' "\\s?" matches white space after 
+# Combine all pages into a single string (ensures we search the entire document at once)
+combined_text <- paste(northern_pdf_text, collapse = " ")
 
-# Initialize a variable to store the extracted number
-N_sierra_current_precip <- NULL
+# Define regex pattern to extract the number next to "Current:
+#"regex (regular expression) pattern is a sequence of characters that define a search pattern for text. to extract the number next to "Current:"
 
-# Search for the pattern in the text
-if (length(northern_pdf_text) > 0) {
-  for (sentence in northern_pdf_text) { #sentence is a tempory placeholder for the term we are looking for
-    match <- regexpr(pattern, sentence, perl = TRUE)
-    if (match[1] != -1) {
-      # Extract the number using the captured group
-      northern_next_four <- regmatches(sentence, match)
-      N_sierra_current_precip <- sub(pattern, "\\1", northern_next_four)
-      cat(paste(N_sierra_current_precip, "inches\n"))
-      break  # Stop the loop after finding the first match of Current and the 4 numbers after it
-    }
-  }
+pattern <- "(?i)Current:\\s?(\\d{1,4}(\\.\\d{1,2})?)"  
+# Explanation:
+# - (?i) -> Case insensitive search:
+# - Current: -> Matches "Current:"
+# - \\s? -> Matches optional whitespace after the word 'current'
+# - (\\d{1,4}(\\.\\d{1,2})?) -> Captures up to 4 digits (e.g., 12, 1234, or 12.34). Only using 4 digits as it is unlikely to see an average greater than xx.xx inches.
+
+# Extract the first match
+#combined_text → Contains all the extracted text from the PDF as a single string.
+#pattern → The regex pattern we created to find the precipitation value.
+#str_match() → Searches for the first occurrence that matches the pattern and extracts the specific value.
+
+match <- str_match(combined_text, pattern)
+
+# Check if a match was found
+#the if statement prevents the code from breaking in case there is no match for 'current precipitation' 
+if (!is.na(match[2])) {
+  N_sierra_current_precip <- match[2]
+  cat(paste(N_sierra_current_precip, "inches\n"))
 } else {
-  cat("No text extracted from the PDF.")
+  cat("No precipitation data found.\n")
 }
 
 
@@ -589,13 +583,6 @@ leaflet() %>%
 
 ```
 
-```{r}
-
-#ggplot(WW_Delta)+
- # geom_sf()+
-  #theme_bw()
-
-```
 
 #Sacramento mean monthly flow
 
