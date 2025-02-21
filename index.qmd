@@ -42,13 +42,6 @@ library(openxlsx)
 
 library(geojsonio)
 
-#options(repos = c(
-   # sbashevkin = 'https://sbashevkin.r-universe.dev',
-  #  CRAN = 'https://cloud.r-project.org'))
-
-#install.packages("deltamapr")
-
-library(deltamapr)
 
 ```
 
@@ -576,15 +569,23 @@ cat(sprintf(" San Luis Reservoir: %.0f%% of average storage, %.0f%% of total cap
 ################### Flow Sacramento
 
 ```{r}
-#map of sensors
+#map of water flow sensors
 
-map <- leaflet() %>%
+# Create the map with Legal Delta boundary and specific points
+leaflet() %>%
   addTiles() %>%
-  setView(lng = -121.5, lat = 38.05, zoom = 9) %>% # Adjust center and zoom for the Legal Delta
+  setView(lng = -121.5, lat = 38.05, zoom = 8) %>%
+  
+  addPolygons(data = legal_delta_boundary, color = "blue", weight = 2, fillOpacity = 0.5, popup = "Legal Delta Boundary") %>%
+  
   addMarkers(lng = -121.27, lat = 37.68, popup = "San Joaquin River near Vernalis") %>% # Add specific gps points
   addMarkers(lng = -121.7, lat = 38.45, popup = "Sacramento at Freeport") %>%          # Add specific gps points
-  addMarkers(lng = -121.3, lat = 37.9, popup = "Central Valley Project and State Water Project pumping station")               
-map
+  addMarkers(lng = -121.3, lat = 37.9, popup = "Central Valley Project and State Water Project pumping station")   # Center the map
+
+
+
+             
+
 
 ```
 
@@ -1011,11 +1012,14 @@ SacSanJoaquin_waterTemp_monthly_average
 
 ```
 
+
+#### check out CLC ###
+
 ```{r, echo=FALSE, results='hide', warning=FALSE, message=FALSE}
 
 #Water Temp - South Delta (near HBP) at Clifton Court Forebay
 
-cdec_datasets("CLC")
+#cdec_datasets("CLC")
 
 # Get the first day of the current month
 start_date <- floor_date(Sys.Date(), "month")
