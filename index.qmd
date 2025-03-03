@@ -125,7 +125,7 @@ Percent of average rain for this date
 N_sierra_average_precip <- c()
 
 # Extract text from the PDF file
-northern_pdf_text <- pdf_text(northern_pdf_file)
+#northern_pdf_text <- pdf_text(northern_pdf_file)
 
 # Check if the PDF text is not empty
 if (length(northern_pdf_text) > 0) {
