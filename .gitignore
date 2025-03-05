@@ -9,3 +9,6 @@
 
 # Ignore Quarto cross-references
 .quarto/xref/
+
+#this is a large file that does not need to be updated/ pushed to Git
+_site/
