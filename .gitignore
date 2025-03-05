@@ -4,3 +4,8 @@
 .Ruserdata
 
 /.quarto/
+# Ignore Quarto execution cache
+.quarto/_freeze/
+
+# Ignore Quarto cross-references
+.quarto/xref/
