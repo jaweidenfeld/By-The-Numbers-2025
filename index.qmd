@@ -575,7 +575,6 @@ leaflet() %>%
 
 ```
 
-
 #Sacramento mean monthly flow
 
 ```{r}
@@ -770,8 +769,11 @@ numeric_values <- delta_export_numbers[str_detect(delta_export_numbers, "^\\d{1,
 #print(numeric_values)
 
 # Extract the 17th numeric value
-if (length(numeric_values) >= 14) {
-    average_delta_export_value <- as.numeric(gsub(",", "", numeric_values[14]))
+
+#sometimes the number (length(numeric_values) >= 15) needs to be changed 
+
+if (length(numeric_values) >= 15) {
+    average_delta_export_value <- as.numeric(gsub(",", "", numeric_values[15]))
 } else {
     warning("Could not find the 14th numeric value. Check the PDF format.")
     average_delta_export_value <- NA
@@ -856,12 +858,13 @@ message(sprintf("Total Delta export (CVP + SWP) monthly average is %.2f%% of the
 
 ```
 
-
 ################################## Salinity
 
 #Sacramento River at Hood (station code SRH) #When run, will automatically update for current month
 
 ```{r}
+
+current_month <- format(Sys.Date(), "%B")
 
 # Get the first day of the current month
 start_date <- floor_date(Sys.Date(), "month")
@@ -874,11 +877,16 @@ sac_cond_daily_new <- cdec_query(station = "SRH", sensor_num = "100",
                              dur_code = "D", start_date = as.character(start_date), 
                              end_date = as.character(end_date))
 Sac_cond_monthly_average<-mean(sac_cond_daily_new$parameter_value, na.rm = T)
-Sac_cond_monthly_average
+
 
 #### ppm conversion
 sac_ppm<-(Sac_cond_monthly_average*0.55)
 
+
+
+#output
+message(sprintf("Average monthly salinity for %s is %.2f µS/cm and %.2f ppm",
+                current_month, Sac_cond_monthly_average, sac_ppm))
 
 ```
 
@@ -899,11 +907,16 @@ SanJoaquin_cond_daily_new <- cdec_query(station = "VER", sensor_num = "100",
 
 
 SanJoaquin_cond_monthly_average<-mean(SanJoaquin_cond_daily_new$parameter_value, na.rm = T)
-SanJoaquin_cond_monthly_average
+
 
 #### ppm conversion
 SanJoa_ppm<-(SanJoaquin_cond_monthly_average*0.55)
-SanJoa_ppm
+
+
+#output
+message(sprintf("Average monthly salinity for %s is %.2f µS/cm and %.2f ppm",
+                current_month, SanJoaquin_cond_monthly_average, SanJoa_ppm))
+
 ```
 
 #Salinity at Banks pumping plant (station code - HBP) #When run, will automatically update for current month
@@ -926,14 +939,20 @@ Banks_cond_daily_new <- cdec_query(station = "HBP", sensor_num = "100",
 
 #need to take the average of all parameter_value for the date 
 Banks_cond_monthly_average<-mean(Banks_cond_daily_new$parameter_value, na.rm = T)
-Banks_cond_monthly_average
+
 
 
 #convert um/cm to ppm
 #idea to have some historical context with the salinity?
 #### ppm conversion
 Banks_ppm<-(Banks_cond_monthly_average*0.55)
-Banks_ppm
+
+
+
+message(sprintf("Average monthly salinity for %s is %.2f µS/cm and %.2f ppm",
+                current_month, Banks_cond_monthly_average, Banks_ppm))
+
+
 ```
 
 ####################### TEMPERATURE
@@ -991,8 +1010,7 @@ SacSanJoaquin_waterTemp_monthly_average
 
 ```
 
-
-#### check out CLC ###
+#### check out CLC
 
 ```{r, echo=FALSE, results='hide', warning=FALSE, message=FALSE}
 
