@@ -169,24 +169,16 @@ Current Precipitation for Central Sierra Region
 #Central Sierra precipitation #Pulling and downloading the pdf from online
 #URL of pdf file
 
-# ***** need to see if this pdf updates everyday with the same URL *******
+
+# URL of the PDF file
 central_ppt_pdf_url <- "https://cdec.water.ca.gov/cgi-progs/products/PLOT_FSI.pdf"
 
+# Read PDF text directly from the URL
+central_pdf_text <- pdf_text(central_ppt_pdf_url)
 
-#pathway to where you want the pdf to be saved
-#can eventaully make the name of the pdf with the date it is downloaded
-central_ppt_pdf_file2<-"data_output/central_sierra2.pdf"
-
-# Download the PDF file
-
-# The "wb" mode is typically used when downloading non-text files, such as images, PDFs, or other binary files. It tells R to open the file in binary mode, which is necessary for correctly handling binary data
-download.file(central_ppt_pdf_url, central_ppt_pdf_file2, mode = "wb")
-
-# Extract text from the PDF
-central_pdf_text <- pdf_text(central_ppt_pdf_file2)
-
-# Print the extracted text
+# Print the extracted text (for debugging)
 print(central_pdf_text)
+
 
 ```
 
