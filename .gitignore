@@ -12,3 +12,7 @@
 
 #this is a large file that does not need to be updated/ pushed to Git
 _site/
+
+_site/search.json
+
+.quarto/idx/index.qmd.json
