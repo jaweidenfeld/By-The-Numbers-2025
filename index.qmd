@@ -826,16 +826,16 @@ delta_export_current_year <- format(Sys.Date(), "%Y")
 delta_export_workbook <- loadWorkbook(delta_export_file_path)
 
 # Read the specific sheet you want to update
-delta_export_historical_data <- readWorkbook(delta_export_workbook, sheet = "Flow_SanJoaq")
+delta_export_historical_data <- readWorkbook(delta_export_workbook, sheet = "Total_Delta_Exports")
 delta_export_historical_data$Year <- as.character(delta_export_historical_data$Year) # Ensure Year is character
 
 # Calculate the historical mean for the current month, if available in your data
 delta_export_current_month_historical_data <- delta_export_historical_data %>%
   filter(Month == delta_export_current_month) %>%
-  select(Average_Flow_Daily)
+  select(Exports)
 
 
-delta_export_current_month_historical_mean <- mean(delta_export_current_month_historical_data$Average_Flow_Daily, na.rm = TRUE)
+delta_export_current_month_historical_mean <- mean(delta_export_current_month_historical_data$Exports, na.rm = TRUE)
 #delta_export_current_month_historical_mean
 
 
