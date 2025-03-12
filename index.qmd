@@ -584,7 +584,7 @@ leaflet() %>%
 sacramento_file_path <- "historical_data/historical_data_full.xlsx"
 
 # Determine the current month and year
-sacramento_current_month <- format(Sys.Date(), "%b")
+sacramento_current_month <- format(Sys.Date(), "%B")
 sacramento_current_year <- format(Sys.Date(), "%Y")
 
 # Load the entire workbook without overwriting other sheets
@@ -661,7 +661,7 @@ suppressMessages({
 san_joaquin_file_path <- "historical_data/historical_data_full.xlsx"
 
 # Determine the current month and year
-san_joaquin_current_month <- format(Sys.Date(), "%b")
+san_joaquin_current_month <- format(Sys.Date(), "%B")
 san_joaquin_current_year <- format(Sys.Date(), "%Y")
 
 # Load the entire workbook without overwriting other sheets
@@ -695,8 +695,15 @@ san_joaquin_current_month_historical_mean <- mean(san_joaquin_current_month_hist
 san_joaquin_percentage_of_cfs_average <- (san_joaquin_export_monthly_average / san_joaquin_current_month_historical_mean) * 100
 
 # Print only the percentage result
-message(sprintf("San Joaquin export monthly average is %.2f%% of the historical average for %s", 
-                san_joaquin_percentage_of_cfs_average, san_joaquin_current_month))
+message(sprintf("San Joaquin export monthly average is %.2f%% of the historical average for %s.\nThe average CFS for %s %s is %.2f.\n", 
+                san_joaquin_percentage_of_cfs_average, 
+                san_joaquin_current_month,
+                san_joaquin_current_month,
+                san_joaquin_current_year,
+                san_joaquin_export_monthly_average))
+
+
+
 
 # Check if there is an entry for the current month and year
 existing_entry <- san_joaquin_historical_data %>%
@@ -784,7 +791,7 @@ if (length(numeric_values) >= 15) {
 
 # Excel file path and current date
 delta_export_file_path <- "historical_data/historical_data_full.xlsx"
-current_month <- format(Sys.Date(), "%b")
+current_month <- format(Sys.Date(), "%B")
 current_year <- format(Sys.Date(), "%Y")
 
 # Load workbook and sheet
@@ -819,7 +826,7 @@ saveWorkbook(delta_exports_workbook, delta_export_file_path, overwrite = TRUE)
 ####################
 
 # Determine the current month and year
-delta_export_current_month <- format(Sys.Date(), "%b")
+delta_export_current_month <- format(Sys.Date(), "%B")
 delta_export_current_year <- format(Sys.Date(), "%Y")
 
 # Load the entire workbook without overwriting other sheets
