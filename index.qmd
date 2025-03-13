@@ -45,24 +45,6 @@ library(geojsonio)
 
 ```
 
-#################### Precipitation
-
-Crucial to the Delta Watershed as it provides water for the Delta!
-
--   **Water Supply**
-
--   **Ecosystem Health**
-
--   **Agricultural Support**
-
--   **Flood Control**
-
--   **Salinity Control**
-
--   **Hydropower Generation**
-
--   **Recreation and Tourism**
-
 ```{r}
 
 # Read PDF text directly from the URL without saving
@@ -74,11 +56,9 @@ northern_pdf_text <- pdf_text(northern_pdf_url)
 
 ```
 
-#### Northern Sierra Region {style="color: darkblue"}
+# Precipitation
 
-###### Precipitation for Northern Sierra Region {style="color: darkblue"}
-
-Current precipitation
+#### Northern Sierra Region Current precipitation {style="color: darkblue"}
 
 ```{r}
 
@@ -158,11 +138,7 @@ if (length(northern_pdf_text) > 0) {
 
 ```
 
-#### Central Sierra {style="color: darkblue"}
-
-###### Precipitation for Central Sierra Region {style="color: darkblue"}
-
-Current Precipitation for Central Sierra Region
+#### Central Sierra Region Current precipitation {style="color: darkblue"}
 
 ```{r, echo=FALSE, results='hide', warning=FALSE, message=FALSE}
 
@@ -247,7 +223,7 @@ if (length(central_pdf_text) > 0) {
 
 #################################################################################### 
 
-#################### SNOW PACK
+# Snow Pack
 
 ```{r, echo=FALSE, results='hide', warning=FALSE, message=FALSE}
 #URL of pdf file
@@ -274,7 +250,7 @@ print(snow_pack_pdf_text)
 
 ```
 
-#North Snow average snow pack
+#### Northern Sierra
 
 ```{r}
 # Define the pattern to match the line containing "NORTH" and the associated percentages
@@ -300,8 +276,6 @@ if (length(north_match) > 0) {
 
 ```
 
-#north snow water equivalent
-
 ```{r}
 
 # Define the pattern to match the line containing the snow water equivalent information
@@ -326,7 +300,7 @@ if (length(snow_water_line) > 0) {
 
 ```
 
-#Central % Snow average snow pack
+#### Central Sierra
 
 ```{r}
 # Define the pattern to match the line containing "NORTH" and the associated percentages
@@ -352,8 +326,6 @@ if (length(central_match) > 0) {
 
 
 ```
-
-#Central snow water equivalent
 
 ```{r}
 
@@ -393,7 +365,7 @@ if (central_sierra_position > 0) {
 
 ```
 
-# State wide average snow pack: water year
+#### State-wide
 
 ```{r}
 
@@ -420,8 +392,6 @@ if (state_position > 0) {
 
 
 ```
-
-#Percent of normal snow pack for this date (%)
 
 ```{r}
 
@@ -552,7 +522,9 @@ cat(sprintf(" San Luis Reservoir: %.0f%% of average storage, %.0f%% of total cap
 
 ### San Luis Reservoir: `r SanLuis_percent_average_storage_value`% of average storage, `r SanLuis_percent_capacity_value`% of total capacity.
 
-################### Flow Sacramento
+# Water Flow and Quality
+
+#### Location of flow sensors. Shaded region is legal delta
 
 ```{r}
 #map of water flow sensors
@@ -575,7 +547,7 @@ leaflet() %>%
 
 ```
 
-#Sacramento mean monthly flow
+#### Sacramento River at Freeport
 
 ```{r}
 
@@ -617,8 +589,14 @@ sacramento_current_month_historical_mean <- mean(sacramento_current_month_histor
 sacramento_percentage_of_cfs_average <- (sacramento_export_monthly_average / sacramento_current_month_historical_mean) * 100
 
 # Print only the percentage result
-message(sprintf("Sacramento export monthly average is %.2f%% of the historical average for %s", 
-                sacramento_percentage_of_cfs_average, sacramento_current_month))
+message(sprintf("Sacramento export monthly average is %.2f%% of the historical average for %s.\nThe average CFS for %s %s is %.2f.\n ", 
+                sacramento_percentage_of_cfs_average, 
+                sacramento_current_month,
+                sacramento_current_month,
+                sacramento_current_year,
+                sacramento_export_monthly_average))
+
+
 
 # Check if there is an entry for the current month and year
 existing_entry <- sacramento_historical_data %>%
@@ -653,7 +631,37 @@ suppressMessages({
 
 ```
 
-# San Joaquin River at Vernalis Flow
+```{r}
+
+#Sacramento River at Hood (station code SRH) #When run, will automatically update for current month
+
+current_month <- format(Sys.Date(), "%B")
+
+# Get the first day of the current month
+start_date <- floor_date(Sys.Date(), "month")
+
+# Get the current date
+end_date <- Sys.Date()
+
+# Query CDEC data from the first of the month to the current date
+sac_cond_daily_new <- cdec_query(station = "SRH", sensor_num = "100", 
+                             dur_code = "D", start_date = as.character(start_date), 
+                             end_date = as.character(end_date))
+Sac_cond_monthly_average<-mean(sac_cond_daily_new$parameter_value, na.rm = T)
+
+
+#### ppm conversion
+sac_ppm<-(Sac_cond_monthly_average*0.55)
+
+
+
+#output
+message(sprintf("Average monthly salinity for %s is %.2f µS/cm and %.2f ppm",
+                current_month, Sac_cond_monthly_average, sac_ppm))
+
+```
+
+#### San Joaquin River at Vernalis
 
 ```{r}
 
@@ -738,7 +746,38 @@ suppressMessages({
 
 ```
 
-#Total Delta Exports: 'total delta exports', average of (CVP + SWP)
+```{r}
+
+#San Joaquin River at Vernalis (station code - VER) #When run, will automatically update for current month
+
+# Get the first day of the current month
+start_date <- floor_date(Sys.Date(), "month")
+
+# Get the current date
+end_date <- Sys.Date()
+
+# Query CDEC data from the first of the month to the current date
+SanJoaquin_cond_daily_new <- cdec_query(station = "VER", sensor_num = "100", 
+                             dur_code = "D", start_date = as.character(start_date), 
+                             end_date = as.character(end_date))
+
+
+SanJoaquin_cond_monthly_average<-mean(SanJoaquin_cond_daily_new$parameter_value, na.rm = T)
+
+
+#### ppm conversion
+SanJoa_ppm<-(SanJoaquin_cond_monthly_average*0.55)
+
+
+#output
+message(sprintf("Average monthly salinity for  %s is %.2f µS/cm and %.2f ppm",
+                current_month, SanJoaquin_cond_monthly_average, SanJoa_ppm))
+
+```
+
+#### Total Delta Exports: (Central Valley Project + State Water Project):
+
+This is a monthly average of exports through: Clifton Court (CLT), Tracy (TRA), Contra Costa (CCC), and Byron Bethany (BBID)
 
 ```{r}
 
@@ -852,8 +891,6 @@ delta_export_percentage_of_cfs_average <- (average_delta_export_value / delta_ex
 
 
 #.2f specifies 2 digits after the decimal place, and f stands for floating point number - meaning the decimal point will be placed whereever it is needed
-#message(sprintf("Total Delta export monthly average is %.2f%% of the historical average for %s", 
-               # delta_export_percentage_of_cfs_average, delta_export_current_month))
 
 message(sprintf("Total Delta export (CVP + SWP) monthly average is %.2f%% of the historical average for %s.\nThe average CFS for %s %s is %.2f.\n",
                 delta_export_percentage_of_cfs_average,
@@ -865,78 +902,17 @@ message(sprintf("Total Delta export (CVP + SWP) monthly average is %.2f%% of the
 
 ```
 
-################################## Salinity
-
-#Sacramento River at Hood (station code SRH) #When run, will automatically update for current month
-
 ```{r}
-
-current_month <- format(Sys.Date(), "%B")
-
-# Get the first day of the current month
-start_date <- floor_date(Sys.Date(), "month")
-
-# Get the current date
-end_date <- Sys.Date()
-
-# Query CDEC data from the first of the month to the current date
-sac_cond_daily_new <- cdec_query(station = "SRH", sensor_num = "100", 
-                             dur_code = "D", start_date = as.character(start_date), 
-                             end_date = as.character(end_date))
-Sac_cond_monthly_average<-mean(sac_cond_daily_new$parameter_value, na.rm = T)
-
-
-#### ppm conversion
-sac_ppm<-(Sac_cond_monthly_average*0.55)
-
-
-
-#output
-message(sprintf("Average monthly salinity for %s is %.2f µS/cm and %.2f ppm",
-                current_month, Sac_cond_monthly_average, sac_ppm))
-
-```
-
-#San Joaquin River at Vernalis (station code - VER) #When run, will automatically update for current month
-
-```{r}
-
-# Get the first day of the current month
-start_date <- floor_date(Sys.Date(), "month")
-
-# Get the current date
-end_date <- Sys.Date()
-
-# Query CDEC data from the first of the month to the current date
-SanJoaquin_cond_daily_new <- cdec_query(station = "VER", sensor_num = "100", 
-                             dur_code = "D", start_date = as.character(start_date), 
-                             end_date = as.character(end_date))
-
-
-SanJoaquin_cond_monthly_average<-mean(SanJoaquin_cond_daily_new$parameter_value, na.rm = T)
-
-
-#### ppm conversion
-SanJoa_ppm<-(SanJoaquin_cond_monthly_average*0.55)
-
-
-#output
-message(sprintf("Average monthly salinity for %s is %.2f µS/cm and %.2f ppm",
-                current_month, SanJoaquin_cond_monthly_average, SanJoa_ppm))
-
-```
-
 #Salinity at Banks pumping plant (station code - HBP) #When run, will automatically update for current month
 
-```{r}
-
-
 # Get the first day of the current month
 start_date <- floor_date(Sys.Date(), "month")
 
 # Get the current date
 end_date <- Sys.Date()
 
+
+#### this sensor is not online at the moment
 # Query CDEC data from the first of the month to the current date
 Banks_cond_daily_new <- cdec_query(station = "HBP", sensor_num = "100", 
                              dur_code = "D", start_date = as.character(start_date), 
@@ -956,19 +932,19 @@ Banks_ppm<-(Banks_cond_monthly_average*0.55)
 
 
 
-message(sprintf("Average monthly salinity for %s is %.2f µS/cm and %.2f ppm",
+message(sprintf("Average monthly salinity for combined CVP + SWP %s is %.2f µS/cm and %.2f ppm",
                 current_month, Banks_cond_monthly_average, Banks_ppm))
 
 
 ```
 
-####################### TEMPERATURE
+# TEMPERATURE
 
 #need to add hisotrical average data in --\> will add to csv file eventually
 
-#Water Temp - Sacramento river headwaters at Clear Creek
-
 ```{r}
+
+#Water Temp - Sacramento river headwaters at Clear Creek
 
 # Get the first day of the current month
 start_date <- floor_date(Sys.Date(), "month")
@@ -991,11 +967,81 @@ SacClearCreek_waterTemp_monthly_average
 
 #cdec_datasets("IGO")
 
+
+
+
+#### write river temp into workbook
+
+# Excel file path and current date
+ClearCreek_file_path <- "historical_data/historical_data_full.xlsx"
+current_month <- format(Sys.Date(), "%B")
+current_year <- format(Sys.Date(), "%Y")
+
+# Load workbook and sheet
+ClearCreek_workbook <- loadWorkbook(ClearCreek_file_path)
+ClearCreek_data <- readWorkbook(ClearCreek_workbook, sheet = "Temp_IGO")
+
+ClearCreek_data$Year <- as.character(ClearCreek_data$Year)
+
+# Check for existing entry
+existing_entry <- ClearCreek_data %>%
+  filter(Month == current_month, Year == current_year)
+
+if (nrow(existing_entry) > 0) {
+  row_to_update <- which(ClearCreek_data$Month == current_month &
+                         ClearCreek_data$Year == current_year)
+  ClearCreek_data[row_to_update, "Average_Temp_Monthly"] <- SacClearCreek_waterTemp_monthly_average
+} else {
+  new_row <- data.frame(
+    Month = current_month,
+    Year = current_year,
+    Average_Temp_Monthly = SacClearCreek_waterTemp_monthly_average
+  )
+  ClearCreek_data <- bind_rows(ClearCreek_data, new_row)
+}
+
+# Write updated sheet back to the workbook
+writeData(ClearCreek_workbook, sheet = "Temp_IGO", x = ClearCreek_data)
+
+# Save the workbook
+saveWorkbook(ClearCreek_workbook, ClearCreek_file_path, overwrite = TRUE)
+
+##### make it print the monthly average for that month for a 20 year average (i think its actually 15 for these)
+######################
+
+# Determine the current month and year
+ClearCreek_current_month <- format(Sys.Date(), "%B")
+ClearCreek_current_year <- format(Sys.Date(), "%Y")
+
+# Load the entire workbook without overwriting other sheets
+ClearCreek_workbook <- loadWorkbook(ClearCreek_file_path)
+
+# Read the specific sheet you want to update
+ClearCreek_historical_data <- readWorkbook(ClearCreek_workbook, sheet = "Temp_IGO")
+ClearCreek_historical_data$Year <- as.character(ClearCreek_historical_data$Year) # Ensure Year is character
+
+# Calculate the historical mean for the current month, if available in your data
+ClearCreek_current_month_historical_data <- ClearCreek_historical_data %>%
+  filter(Month == ClearCreek_current_month) %>%
+  select(Average_Temp_Monthly)
+
+
+ClearCreek_current_month_historical_mean <- mean(ClearCreek_current_month_historical_data$Average_Temp_Monthly, na.rm = TRUE)
+#delta_export_current_month_historical_mean
+ClearCreek_current_month_historical_mean
+
+
+
+message(sprintf("Average monthly water temperature for Clear Creek in %s is %.2f degree F and the historical average for %s is %.2f degree F",
+                ClearCreek_current_month, SacClearCreek_waterTemp_monthly_average, 
+                ClearCreek_current_month,
+                ClearCreek_current_month_historical_mean))
+
+
 ```
 
-#Water Temp - Sacramento/San Joaquin Rivers confluence at Collinsville
-
 ```{r}
+#Water Temp - Sacramento/San Joaquin Rivers confluence at Collinsville
 
 # Get the first day of the current month
 start_date <- floor_date(Sys.Date(), "month")
@@ -1017,11 +1063,10 @@ SacSanJoaquin_waterTemp_monthly_average
 
 ```
 
-#### check out CLC
-
 ```{r, echo=FALSE, results='hide', warning=FALSE, message=FALSE}
 
 #Water Temp - South Delta (near HBP) at Clifton Court Forebay
+
 
 #cdec_datasets("CLC")
 
@@ -1041,11 +1086,8 @@ SouthDelta_waterTemp_new <- cdec_query(station = "CLC", sensor_num = "146",
 #because CLC temp gage only have readings in Celcius, need to convert to F
 
 SouthDelta_waterTemp_new$parameter_F<-(SouthDelta_waterTemp_new$parameter_value*( 9/5) + 32)
-```
 
-#Water Temp - South Delta (near HBP) at Clifton Court Forebay
 
-```{r}
 #need to take the average of all parameter_value for the date 
 SouthDelta_waterTemp_monthly_average_F<-mean(SouthDelta_waterTemp_new$parameter_F, na.rm = T)
 SouthDelta_waterTemp_monthly_average_F

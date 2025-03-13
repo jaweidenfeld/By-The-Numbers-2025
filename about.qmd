@@ -8,11 +8,6 @@ body-attr: class="about-page"
 
 ![Image of the delta](./images/about_background.jpg)
 
-
-
-
-
-
 ::: content
 **About By The Numbers: In context of the Sacramento-San Joaquin Delta**
 
@@ -23,4 +18,22 @@ The Delta Stewardship Council was created in legislation to achieve the state ma
 Therefore it is important to understand how water is changing and moving through our delta, and what that means for the watershed and the people and organisms that call it home.
 
 **By The Numbers** provides Sacramento - San Joaquin Delta specific hydrologic information. The reported values are important areas and indicators for our Delta. These include precipitaiton, snow pack, Delta water exports, river flows, water temperature and reservoir information.
+
+**Precipitation**
+
+Crucial to the Delta Watershed as it provides water for the Delta!
+
+Water Supply
+
+Ecosystem Health
+
+Agricultural Support
+
+Flood Control
+
+Salinity Control
+
+Hydropower Generation
+
+Recreation and Tourism
 :::
