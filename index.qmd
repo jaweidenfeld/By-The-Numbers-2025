@@ -1032,7 +1032,7 @@ ClearCreek_current_month_historical_mean
 
 
 
-message(sprintf("Average monthly water temperature for Clear Creek in %s is %.2f degree F and the historical average for %s is %.2f degree F",
+message(sprintf("Average monthly water temperature for Clear Creek in %s is %.2f°F\nand the historical average for %s is %.2f°F",
                 ClearCreek_current_month, SacClearCreek_waterTemp_monthly_average, 
                 ClearCreek_current_month,
                 ClearCreek_current_month_historical_mean))
@@ -1060,6 +1060,75 @@ SacSanJoaquin_waterTemp_new <- cdec_query(station = "CSE", sensor_num = "25",
 SacSanJoaquin_waterTemp_monthly_average<-mean(SacSanJoaquin_waterTemp_new$parameter_value, na.rm = T)
 SacSanJoaquin_waterTemp_monthly_average
 
+
+
+
+#### write river temp into workbook
+
+# Excel file path and current date
+SacSanJoaquin_file_path <- "historical_data/historical_data_full.xlsx"
+current_month <- format(Sys.Date(), "%B")
+current_year <- format(Sys.Date(), "%Y")
+
+# Load workbook and sheet
+SacSanJoaquin_workbook <- loadWorkbook(SacSanJoaquin_file_path)
+SacSanJoaquin_data <- readWorkbook(SacSanJoaquin_workbook, sheet = "Temp_CSE")
+
+SacSanJoaquin_data$Year <- as.character(SacSanJoaquin_data$Year)
+
+# Check for existing entry
+existing_entry <- SacSanJoaquin_data %>%
+  filter(Month == current_month, Year == current_year)
+
+if (nrow(existing_entry) > 0) {
+  row_to_update <- which(SacSanJoaquin_data$Month == current_month &
+                         SacSanJoaquin_data$Year == current_year)
+  SacSanJoaquin_data[row_to_update, "Average_Temp_Monthly"] <- SacSanJoaquin_waterTemp_monthly_average
+} else {
+  new_row <- data.frame(
+    Month = current_month,
+    Year = current_year,
+    Average_Temp_Monthly = SacSanJoaquin_waterTemp_monthly_average
+  )
+  SacSanJoaquin_data <- bind_rows(SacSanJoaquin_data, new_row)
+}
+
+# Write updated sheet back to the workbook
+writeData(SacSanJoaquin_workbook, sheet = "Temp_CSE", x = SacSanJoaquin_data)
+
+# Save the workbook
+saveWorkbook(SacSanJoaquin_workbook, SacSanJoaquin_file_path, overwrite = TRUE)
+
+##### make it print the monthly average for that month for a 20 year average (i think its actually 15 for these)
+######################
+
+# Determine the current month and year
+SacSanJoaquin_current_month <- format(Sys.Date(), "%B")
+SacSanJoaquin_current_year <- format(Sys.Date(), "%Y")
+
+# Load the entire workbook without overwriting other sheets
+SacSanJoaquin_workbook <- loadWorkbook(SacSanJoaquin_file_path)
+
+# Read the specific sheet you want to update
+SacSanJoaquin_historical_data <- readWorkbook(SacSanJoaquin_workbook, sheet = "Temp_CSE")
+SacSanJoaquin_historical_data$Year <- as.character(SacSanJoaquin_historical_data$Year) # Ensure Year is character
+
+# Calculate the historical mean for the current month, if available in your data
+SacSanJoaquin_current_month_historical_data <- SacSanJoaquin_historical_data %>%
+  filter(Month == SacSanJoaquin_current_month) %>%
+  select(Average_Temp_Hourly)
+
+
+SacSanJoaquin_current_month_historical_mean <- mean(SacSanJoaquin_current_month_historical_data$Average_Temp_Hourly, na.rm = TRUE)
+#delta_export_current_month_historical_mean
+SacSanJoaquin_current_month_historical_mean
+
+
+
+message(sprintf("Average monthly water temperature for Sacramento San Joaquin Delta in %s is %.2f°F\nand the historical average for %s is %.2f°F",
+                SacSanJoaquin_current_month, SacSanJoaquin_waterTemp_monthly_average, 
+                SacSanJoaquin_current_month,
+                SacSanJoaquin_current_month_historical_mean))
 
 ```
 
