@@ -42,6 +42,7 @@ library(openxlsx)
 
 library(geojsonio)
 
+library(htmltools)
 
 ```
 
@@ -552,6 +553,8 @@ leaflet() %>%
 ```{r}
 
 
+#### Sacramento River at Freeport
+
 # File path to your Excel file
 sacramento_file_path <- "historical_data/historical_data_full.xlsx"
 
@@ -564,16 +567,22 @@ sacramento_workbook <- loadWorkbook(sacramento_file_path)
 
 # Read the specific sheet you want to update
 sacramento_historical_data <- readWorkbook(sacramento_workbook, sheet = "Flow_Sac")
-sacramento_historical_data$Year <- as.character(sacramento_historical_data$Year) # Ensure Year is character
+
+# Ensure Year is character
+sacramento_historical_data$Year <- as.character(sacramento_historical_data$Year) 
 
 # Define the start and end dates for the current month
 sacramento_start_date <- floor_date(Sys.Date(), "month")
 sacramento_end_date <- Sys.Date()
 
 # Query CDEC data for Sacramento at Freeport (station "FPT") for the current month
-sacramento_flow_daily <- cdec_query(station = "FPT", sensor_num = 20, 
-                                    dur_code = "H", start_date = as.character(sacramento_start_date), 
-                                    end_date = as.character(sacramento_end_date))
+sacramento_flow_daily <- cdec_query(
+  station = "FPT", 
+  sensor_num = 20, 
+  dur_code = "H", 
+  start_date = as.character(sacramento_start_date), 
+  end_date = as.character(sacramento_end_date)
+)
 
 # Calculate the monthly average for Sacramento flow
 sacramento_export_monthly_average <- mean(sacramento_flow_daily$parameter_value, na.rm = TRUE)
@@ -588,48 +597,63 @@ sacramento_current_month_historical_mean <- mean(sacramento_current_month_histor
 # Calculate the percentage of the current month’s average relative to the historical average
 sacramento_percentage_of_cfs_average <- (sacramento_export_monthly_average / sacramento_current_month_historical_mean) * 100
 
-# Print only the percentage result
-message(sprintf("Sacramento export monthly average is %.2f%% of the historical average for %s.\nThe average CFS for %s %s is %.2f.\n ", 
-                sacramento_percentage_of_cfs_average, 
-                sacramento_current_month,
-                sacramento_current_month,
-                sacramento_current_year,
-                sacramento_export_monthly_average))
 
 
+
+# Define HTML color codes for Quarto rendering (for percentage only)
+sac_color_percentage <- ifelse(
+  sacramento_percentage_of_cfs_average >= 90, "green",
+  ifelse(sacramento_percentage_of_cfs_average >= 75, "blue",
+  ifelse(sacramento_percentage_of_cfs_average >= 50, "orange",
+  "red"))) 
+
+
+sac_flow_formatted <- sprintf(
+  "Sacramento export monthly average is %.2f%% of the historical average for %s.<br>
+   Average CFS for %s %s is <strong><span style='color:%s'>%.2f</span></strong>.<br>", 
+  sacramento_percentage_of_cfs_average, sacramento_current_month, 
+  sacramento_current_month, sacramento_current_year, 
+  sac_color_percentage, sacramento_export_monthly_average
+)
+
+# Render as raw HTML so Quarto interprets it correctly
+HTML(sac_flow_formatted)
 
 # Check if there is an entry for the current month and year
 existing_entry <- sacramento_historical_data %>%
   filter(Month == sacramento_current_month, Year == sacramento_current_year)
 
 suppressMessages({
-  if (nrow(existing_entry) > 0) {
+  if (nrow(existing_entry) > 0) {  
     # Update the existing row with the new flow average for the current month
-    row_to_update <- which(sacramento_historical_data$Month == sacramento_current_month & 
-                           sacramento_historical_data$Year == sacramento_current_year)
+    row_to_update <- which(
+      sacramento_historical_data$Month == sacramento_current_month & 
+      sacramento_historical_data$Year == sacramento_current_year
+    )
+    
     sacramento_historical_data[row_to_update, "Average_Flow_Daily"] <- sacramento_export_monthly_average
-  } else {
+  } else { 
     # Create a new row with the current month, year, and flow average if it's a new month
     new_row <- data.frame(
-      Month = sacramento_current_month,
-      Year = sacramento_current_year,
+      Month = sacramento_current_month, 
+      Year = sacramento_current_year, 
       Average_Flow_Daily = sacramento_export_monthly_average
     )
     
     # Append the new row to the historical data
     sacramento_historical_data <- bind_rows(sacramento_historical_data, new_row)
   }
-  
+
   # Write only the modified sheet back to the workbook
   writeData(sacramento_workbook, sheet = "Flow_Sac", x = sacramento_historical_data)
-  
+
   # Save the workbook, preserving all other sheets
   saveWorkbook(sacramento_workbook, sacramento_file_path, overwrite = TRUE)
 })
 
 
-
 ```
+
 
 ```{r}
 
@@ -656,10 +680,12 @@ sac_ppm<-(Sac_cond_monthly_average*0.55)
 
 
 #output
-message(sprintf("Average monthly salinity for %s is %.2f µS/cm and %.2f ppm",
-                current_month, Sac_cond_monthly_average, sac_ppm))
+sac_salinity_formatted<-sprintf("Average monthly salinity for %s is %.2f µS/cm | %.2f ppm",
+                current_month, Sac_cond_monthly_average, sac_ppm)
 
+HTML(sac_salinity_formatted)
 ```
+
 
 #### San Joaquin River at Vernalis
 
@@ -702,13 +728,28 @@ san_joaquin_current_month_historical_mean <- mean(san_joaquin_current_month_hist
 # Calculate the percentage of the current month’s average relative to the historical average
 san_joaquin_percentage_of_cfs_average <- (san_joaquin_export_monthly_average / san_joaquin_current_month_historical_mean) * 100
 
-# Print only the percentage result
-message(sprintf("San Joaquin export monthly average is %.2f%% of the historical average for %s.\nThe average CFS for %s %s is %.2f.\n", 
-                san_joaquin_percentage_of_cfs_average, 
-                san_joaquin_current_month,
-                san_joaquin_current_month,
-                san_joaquin_current_year,
-                san_joaquin_export_monthly_average))
+
+
+
+# Define HTML color codes for Quarto rendering (for percentage only)
+sanjoaq_color_percentage <- ifelse(
+  san_joaquin_percentage_of_cfs_average >= 90, "green",
+  ifelse(san_joaquin_percentage_of_cfs_average >= 75, "blue",
+  ifelse(san_joaquin_percentage_of_cfs_average >= 50, "orange",
+  "red")))
+
+
+sanjoaq_flow_formatted <- sprintf(
+  "San Joaquin export monthly average is %.2f%% of the historical average for %s.<br>
+   Average CFS for %s %s is <strong><span style='color:%s'>%.2f</span></strong>.<br>", 
+ san_joaquin_percentage_of_cfs_average, san_joaquin_current_month, 
+ san_joaquin_current_month, san_joaquin_current_year, 
+  sanjoaq_color_percentage, san_joaquin_export_monthly_average
+)
+
+# Render as raw HTML so Quarto interprets it correctly
+HTML(sanjoaq_flow_formatted)
+
 
 
 
@@ -770,8 +811,14 @@ SanJoa_ppm<-(SanJoaquin_cond_monthly_average*0.55)
 
 
 #output
-message(sprintf("Average monthly salinity for  %s is %.2f µS/cm and %.2f ppm",
-                current_month, SanJoaquin_cond_monthly_average, SanJoa_ppm))
+
+
+
+#output
+SanJoa_salinity_formatted<-sprintf("Average monthly salinity for %s is %.2f µS/cm | %.2f ppm",
+                current_month, SanJoaquin_cond_monthly_average, SanJoa_ppm)
+
+HTML(SanJoa_salinity_formatted)
 
 ```
 
@@ -892,12 +939,28 @@ delta_export_percentage_of_cfs_average <- (average_delta_export_value / delta_ex
 
 #.2f specifies 2 digits after the decimal place, and f stands for floating point number - meaning the decimal point will be placed whereever it is needed
 
-message(sprintf("Total Delta export (CVP + SWP) monthly average is %.2f%% of the historical average for %s.\nThe average CFS for %s %s is %.2f.\n",
-                delta_export_percentage_of_cfs_average,
-                delta_export_current_month,
-                delta_export_current_month,
-                delta_export_current_year,
-                average_delta_export_value))
+
+
+
+# Define HTML color codes for Quarto rendering (for percentage only)
+deltaexport_color_percentage <- ifelse(
+  delta_export_percentage_of_cfs_average >= 90, "green",
+  ifelse(delta_export_percentage_of_cfs_average >= 75, "blue",
+  ifelse(delta_export_percentage_of_cfs_average >= 50, "orange",
+  "red")))
+
+
+delta_export_formatted <- sprintf(
+  "Total Delta export (CVP + SWP) monthly average is %.2f%% of the historical average for %s.<br>
+   Average CFS for %s %s is <strong><span style='color:%s'>%.2f</span></strong>.<br>", 
+ delta_export_percentage_of_cfs_average, delta_export_current_month, 
+ delta_export_current_month, delta_export_current_year, 
+  deltaexport_color_percentage, average_delta_export_value
+)
+
+# Render as raw HTML so Quarto interprets it correctly
+HTML(delta_export_formatted)
+
 
 
 ```
@@ -932,11 +995,34 @@ Banks_ppm<-(Banks_cond_monthly_average*0.55)
 
 
 
-message(sprintf("Average monthly salinity for combined CVP + SWP %s is %.2f µS/cm and %.2f ppm",
-                current_month, Banks_cond_monthly_average, Banks_ppm))
+#output
+banks_salinity_formatted<-sprintf("Average monthly salinity for %s is %.2f µS/cm | %.2f ppm",
+                current_month, Banks_cond_monthly_average, Banks_ppm)
+
+HTML(banks_salinity_formatted)
 
 
 ```
+
+```{r}
+# I want to put the color coding for the sets of numbers here
+
+# Define the ranges with actual numeric values
+ranges <- c("<span style='color:red'>50%</span>", 
+            "<span style='color:orange'>50-74%</span>", 
+            "<span style='color:blue'>75-90%</span>", 
+            "<span style='color:green'>>90%</span>")
+
+# Create the inline HTML string with color-coded numbers
+html_string <- paste(ranges, collapse = "  ")
+
+# Render as raw HTML in Quarto
+cat(html_string)
+
+
+```
+
+
 
 # TEMPERATURE
 
@@ -953,15 +1039,15 @@ start_date <- floor_date(Sys.Date(), "month")
 end_date <- Sys.Date()
 
 # Query CDEC data from the first of the month to the current date
-SacClearCreek_waterTemp_new <- cdec_query(station = "IGO", sensor_num = "25", 
+ClearCreek_waterTemp_new <- cdec_query(station = "IGO", sensor_num = "25", 
                              dur_code = "H", start_date = as.character(start_date), 
                              end_date = as.character(end_date))
 
 
 
 #need to take the average of all parameter_value for the date 
-SacClearCreek_waterTemp_monthly_average<-mean(SacClearCreek_waterTemp_new$parameter_value, na.rm = T)
-SacClearCreek_waterTemp_monthly_average
+ClearCreek_waterTemp_monthly_average<-mean(ClearCreek_waterTemp_new$parameter_value, na.rm = T)
+ClearCreek_waterTemp_monthly_average
 
 
 
@@ -990,12 +1076,12 @@ existing_entry <- ClearCreek_data %>%
 if (nrow(existing_entry) > 0) {
   row_to_update <- which(ClearCreek_data$Month == current_month &
                          ClearCreek_data$Year == current_year)
-  ClearCreek_data[row_to_update, "Average_Temp_Monthly"] <- SacClearCreek_waterTemp_monthly_average
+  ClearCreek_data[row_to_update, "Average_Temp_Monthly"] <- ClearCreek_waterTemp_monthly_average
 } else {
   new_row <- data.frame(
     Month = current_month,
     Year = current_year,
-    Average_Temp_Monthly = SacClearCreek_waterTemp_monthly_average
+    Average_Temp_Monthly = ClearCreek_waterTemp_monthly_average
   )
   ClearCreek_data <- bind_rows(ClearCreek_data, new_row)
 }
@@ -1032,10 +1118,11 @@ ClearCreek_current_month_historical_mean
 
 
 
-message(sprintf("Average monthly water temperature for Clear Creek in %s is %.2f°F\nand the historical average for %s is %.2f°F",
-                ClearCreek_current_month, SacClearCreek_waterTemp_monthly_average, 
-                ClearCreek_current_month,
-                ClearCreek_current_month_historical_mean))
+
+ClearCreek_temp_formatted<-sprintf("Average monthly Temperature at Clear Creek for %s is %.2f °F and the historical monthly average temperature is %.2f °F",
+                ClearCreek_current_month, ClearCreek_waterTemp_monthly_average,ClearCreek_current_month_historical_mean)
+
+HTML(ClearCreek_temp_formatted)
 
 
 ```
@@ -1125,10 +1212,11 @@ SacSanJoaquin_current_month_historical_mean
 
 
 
-message(sprintf("Average monthly water temperature for Sacramento San Joaquin Delta in %s is %.2f°F\nand the historical average for %s is %.2f°F",
-                SacSanJoaquin_current_month, SacSanJoaquin_waterTemp_monthly_average, 
-                SacSanJoaquin_current_month,
-                SacSanJoaquin_current_month_historical_mean))
+SacSanJoaquin_temp_formatted<-sprintf("Average monthly Temperature at Collinsville for %s is %.2f °F and the historical monthly average temperature is %.2f °F",
+                SacSanJoaquin_current_month, SacSanJoaquin_waterTemp_monthly_average, SacSanJoaquin_current_month_historical_mean)
+
+HTML(SacSanJoaquin_temp_formatted)
+
 
 ```
 
@@ -1160,5 +1248,77 @@ SouthDelta_waterTemp_new$parameter_F<-(SouthDelta_waterTemp_new$parameter_value*
 #need to take the average of all parameter_value for the date 
 SouthDelta_waterTemp_monthly_average_F<-mean(SouthDelta_waterTemp_new$parameter_F, na.rm = T)
 SouthDelta_waterTemp_monthly_average_F
+
+
+
+
+
+#### write river temp into workbook
+
+# Excel file path and current date
+SouthDelta_file_path <- "historical_data/historical_data_full.xlsx"
+current_month <- format(Sys.Date(), "%B")
+current_year <- format(Sys.Date(), "%Y")
+
+# Load workbook and sheet
+SouthDelta_workbook <- loadWorkbook(SouthDelta_file_path)
+SouthDelta_data <- readWorkbook(SouthDelta_workbook, sheet = "Temp_CLC")
+
+SouthDelta_data$Year <- as.character(SouthDelta_data$Year)
+
+# Check for existing entry
+existing_entry <- SouthDelta_data %>%
+  filter(Month == current_month, Year == current_year)
+
+if (nrow(existing_entry) > 0) {
+  row_to_update <- which(SouthDelta_data$Month == current_month &
+                         SouthDelta_data$Year == current_year)
+  SouthDelta_data[row_to_update, "Average_Temp_Monthly"] <- SouthDelta_waterTemp_monthly_average_F
+} else {
+  new_row <- data.frame(
+    Month = current_month,
+    Year = current_year,
+    Average_Temp_Monthly = SouthDelta_waterTemp_monthly_average_F
+  )
+  SouthDelta_data <- bind_rows(SouthDelta_data, new_row)
+}
+
+# Write updated sheet back to the workbook
+writeData(SouthDelta_workbook, sheet = "Temp_CLC", x = SouthDelta_data)
+
+# Save the workbook
+saveWorkbook(SouthDelta_workbook, SouthDelta_file_path, overwrite = TRUE)
+
+##### make it print the monthly average for that month for a 20 year average (i think its actually 15 for these)
+######################
+
+# Determine the current month and year
+SouthDelta_current_month <- format(Sys.Date(), "%B")
+SouthDelta_current_year <- format(Sys.Date(), "%Y")
+
+# Load the entire workbook without overwriting other sheets
+SouthDelta_workbook <- loadWorkbook(SouthDelta_file_path)
+
+# Read the specific sheet you want to update
+SouthDelta_historical_data <- readWorkbook(SouthDelta_workbook, sheet = "Temp_CLC")
+SouthDelta_historical_data$Year <- as.character(SouthDelta_historical_data$Year) # Ensure Year is character
+
+# Calculate the historical mean for the current month, if available in your data
+SouthDelta_current_month_historical_data <- SouthDelta_historical_data %>%
+  filter(Month == SouthDelta_current_month) %>%
+  select(Average_Temp_Hourly)
+
+
+SouthDelta_current_month_historical_mean <- mean(SouthDelta_current_month_historical_data$Average_Temp_Hourly, na.rm = TRUE)
+#delta_export_current_month_historical_mean
+SouthDelta_current_month_historical_mean
+
+
+
+SouthDelta_temp_formatted<-sprintf("Average monthly Temperature at Clifton Court Forebay for %s is %.2f °F and the historical monthly average temperature is %.2f °F",
+                SouthDelta_current_month, SouthDelta_waterTemp_monthly_average_F, SouthDelta_current_month_historical_mean)
+
+HTML(SouthDelta_temp_formatted)
+
 
 ```
