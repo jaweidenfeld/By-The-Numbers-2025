@@ -1047,7 +1047,7 @@ ClearCreek_waterTemp_new <- cdec_query(station = "IGO", sensor_num = "25",
 
 #need to take the average of all parameter_value for the date 
 ClearCreek_waterTemp_monthly_average<-mean(ClearCreek_waterTemp_new$parameter_value, na.rm = T)
-ClearCreek_waterTemp_monthly_average
+
 
 
 
@@ -1114,7 +1114,7 @@ ClearCreek_current_month_historical_data <- ClearCreek_historical_data %>%
 
 ClearCreek_current_month_historical_mean <- mean(ClearCreek_current_month_historical_data$Average_Temp_Monthly, na.rm = TRUE)
 #delta_export_current_month_historical_mean
-ClearCreek_current_month_historical_mean
+
 
 
 
@@ -1145,8 +1145,6 @@ SacSanJoaquin_waterTemp_new <- cdec_query(station = "CSE", sensor_num = "25",
 
 #need to take the average of all parameter_value for the date 
 SacSanJoaquin_waterTemp_monthly_average<-mean(SacSanJoaquin_waterTemp_new$parameter_value, na.rm = T)
-SacSanJoaquin_waterTemp_monthly_average
-
 
 
 
@@ -1208,7 +1206,7 @@ SacSanJoaquin_current_month_historical_data <- SacSanJoaquin_historical_data %>%
 
 SacSanJoaquin_current_month_historical_mean <- mean(SacSanJoaquin_current_month_historical_data$Average_Temp_Hourly, na.rm = TRUE)
 #delta_export_current_month_historical_mean
-SacSanJoaquin_current_month_historical_mean
+
 
 
 
@@ -1220,7 +1218,7 @@ HTML(SacSanJoaquin_temp_formatted)
 
 ```
 
-```{r, echo=FALSE, results='hide', warning=FALSE, message=FALSE}
+```{r}
 
 #Water Temp - South Delta (near HBP) at Clifton Court Forebay
 
@@ -1247,7 +1245,7 @@ SouthDelta_waterTemp_new$parameter_F<-(SouthDelta_waterTemp_new$parameter_value*
 
 #need to take the average of all parameter_value for the date 
 SouthDelta_waterTemp_monthly_average_F<-mean(SouthDelta_waterTemp_new$parameter_F, na.rm = T)
-SouthDelta_waterTemp_monthly_average_F
+
 
 
 
@@ -1311,7 +1309,7 @@ SouthDelta_current_month_historical_data <- SouthDelta_historical_data %>%
 
 SouthDelta_current_month_historical_mean <- mean(SouthDelta_current_month_historical_data$Average_Temp_Hourly, na.rm = TRUE)
 #delta_export_current_month_historical_mean
-SouthDelta_current_month_historical_mean
+
 
 
 
