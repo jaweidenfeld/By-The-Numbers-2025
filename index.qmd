@@ -384,6 +384,39 @@ if (length(snow_water_line) > 0) {
 
 ```
 
+```{r}
+# Extract and render snowflake image based on percent
+if (length(north_percentages) >= 2) {
+  percent_value <- as.numeric(str_remove(north_percentages[2], "%"))
+
+  # Round down to nearest 5%
+  percent_rounded <- floor(percent_value / 5) * 5
+  percent_rounded <- min(percent_rounded, 95)  # cap at 95 to stay in range
+
+  # Build file path
+  file_path <- sprintf("images/snowflakes/snowflake_%02d.png", percent_rounded)
+
+  # Render the image with caption
+  flake_img_tag <- sprintf(
+    "<img src='%s' width='150px' alt='Snowflake for %d%% snowpack'>",
+    file_path, percent_rounded
+  )
+
+  output_html <- paste0(
+    "Northern Sierra snowpack level: ", north_percentages[2], "<br>",
+    flake_img_tag
+  )
+
+  HTML(output_html)
+
+} else {
+  cat("Second percentage in the 'NORTH' section not found.")
+}
+
+
+
+```
+
 #### Central Sierra
 
 ```{r}
@@ -449,6 +482,40 @@ if (central_sierra_position > 0) {
 
 ```
 
+```{r}
+
+# Extract and render snowflake image based on percent
+if (length(central_percentages) >= 2) {
+  percent_value <- as.numeric(str_remove(central_percentages[2], "%"))
+
+  # Round down to nearest 5%
+  percent_rounded <- floor(percent_value / 5) * 5
+  percent_rounded <- min(percent_rounded, 95)  # cap at 95 to stay in range
+
+  # Build file path
+  file_path <- sprintf("images/snowflakes/snowflake_%02d.png", percent_rounded)
+
+  # Render the image with caption
+  flake_img_tag <- sprintf(
+    "<img src='%s' width='150px' alt='Snowflake for %d%% snowpack'>",
+    file_path, percent_rounded
+  )
+
+  output_html <- paste0(
+    "Central Sierra snowpack level: ", central_percentages[2], "<br>",
+    flake_img_tag
+  )
+
+  HTML(output_html)
+
+} else {
+  cat("Second percentage in the 'CENTRAL' section not found.")
+}
+
+
+
+```
+
 #### State-wide
 
 ```{r}
@@ -504,6 +571,43 @@ if (statewide_position > 0) {
 
 ```
 
+```{r}
+
+# Extract and render snowflake image based on percent
+if (length(statewide_percentages) >= 2) {
+  percent_value <- as.numeric(str_remove(statewide_percentages[2], "%"))
+
+  # Round down to nearest 5%
+  percent_rounded <- floor(percent_value / 5) * 5
+  percent_rounded <- min(percent_rounded, 95)  # cap at 95 to stay in range
+
+  # Build file path
+  file_path <- sprintf("images/snowflakes/snowflake_%02d.png", percent_rounded)
+
+  # Render the image with caption
+  flake_img_tag <- sprintf(
+    "<img src='%s' width='150px' alt='Snowflake for %d%% snowpack'>",
+    file_path, percent_rounded
+  )
+
+  output_html <- paste0(
+    "State wide snowpack level: ", statewide_percentages[2], "<br>",
+    flake_img_tag
+  )
+
+  HTML(output_html)
+
+} else {
+  cat("Second percentage in the 'STATE' section not found.")
+}
+
+
+
+
+
+```
+
+
 # Reservoir Storage
 
 ```{r}
@@ -514,14 +618,14 @@ legal_delta_boundary <- geojson_read("geo_files/legal_delta.geojson", what = "sp
 # Create the map with Legal Delta boundary and specific points
 leaflet() %>%
   addTiles() %>%
-  setView(lng = -121.5, lat = 38.05, zoom = 7) %>%  # Center the map
+  setView(lng = -121.5, lat = 39.0, zoom = 6.25) %>%  # Center the map
 
   # Add the Legal Delta boundary polygon
   addPolygons(data = legal_delta_boundary, color = "blue", weight = 2, fillOpacity = 0.5, popup = "Legal Delta Boundary") %>%
   
   # Add specific points of interest as markers
   addMarkers(lng = -121.493000, lat = 39.540000, popup = "Oroville Reservoir") %>%  # Oroville reservoir (ORO)
-  addMarkers(lng = 	-119.302000, lat = 	37.145000, popup = "Shasta Reservoir") %>%    # Shasta reservoir (SHA)
+  addMarkers(lng = 	-122.420000, lat = 40.718000, popup = "Shasta Reservoir") %>%    # Shasta reservoir (SHA)
   addMarkers(lng = -121.133000, lat = 37.033000, popup = "San Luis Reservoir")   # San Luis reservoir (SNL)
 
 
@@ -620,8 +724,8 @@ leaflet() %>%
   
   addPolygons(data = legal_delta_boundary, color = "blue", weight = 2, fillOpacity = 0.5, popup = "Legal Delta Boundary") %>%
   
-  addMarkers(lng = -121.27, lat = 37.68, popup = "San Joaquin River near Vernalis") %>% # Add specific gps points
-  addMarkers(lng = -121.7, lat = 38.45, popup = "Sacramento at Freeport") %>%          # Add specific gps points
+  addMarkers(lng = 	-121.265002, lat = 37.679376, popup = "San Joaquin River near Vernalis") %>% # Add specific gps points
+  addMarkers(lng = -121.500300, lat = 	38.456112, popup = "Sacramento at Freeport") %>%          # Add specific gps points
   addMarkers(lng = -121.3, lat = 37.9, popup = "Central Valley Project and State Water Project pumping station")   # Center the map
 
 
