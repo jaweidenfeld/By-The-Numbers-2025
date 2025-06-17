@@ -135,13 +135,40 @@ library(htmltools)
 
 
 ```
+
+```{r}
+#create bins for which waterdrop image will coorespond to which percentage 
+# can change this depending on 
+
+get_waterdrop_label <- function(percent) {
+  bins <- c(0.9, 4, 7, 9, 10,
+            12.9, 14.9, 17.9, 19.9, 22.9, 24.9, 27.9, 29.9, 32.9,
+            34.9, 37.9, 39.9, 42.9, 44.9, 47.9, 49.9, 52.9, 54.9,
+            57.9, 59.9, 62.9, 64.9, 67.9, 69.9, 72.9, 74.9, 77.9,
+            79.9, 82.9, 84.9, 87.9, 89.9, 92.9, 94.9, 97.9, 99.9, 100.1)
+
+  labels <- c("00", "02", "05", "08", "10",
+              "12", "15", "18", "20", "23", "25", "28", "30", "33",
+              "35", "38", "40", "43", "45", "48", "50", "53", "55",
+              "58", "60", "63", "65", "68", "70", "73", "75", "78",
+              "80", "83", "85", "88", "90", "93", "95", "98", "100", "100")
+
+  for (i in seq_along(bins)) {
+    if (percent <= bins[i]) {
+      return(labels[i])
+    }
+  }
+  return("100")
+}
+
+```
+
+
 ```{r}
 
-# Read PDF text directly from the URL
+# Read Northern Sierra PDF text
 northern_pdf_url <- "https://cdec.water.ca.gov/cgi-progs/products/PLOT_ESI.pdf"
 northern_pdf_text <- pdf_text(northern_pdf_url)
-
-# Combine all pages into one string
 combined_text <- paste(northern_pdf_text, collapse = " ")
 
 # Extract precipitation (inches)
@@ -154,26 +181,37 @@ percent_pattern <- "(?i)Percent of Average for this Date:\\s*(\\d+%)"
 percent_match_text <- regmatches(combined_text, regexpr(percent_pattern, combined_text, perl = TRUE))
 
 if (!is.na(precip_value) && length(percent_match_text) > 0) {
-  
+
   percent_value <- sub(percent_pattern, "\\1", percent_match_text)
   numeric_percent <- as.numeric(str_remove(percent_value, "%"))
-  
-  # Use percent value to choose color for both outputs
+
+  # Color coding
   color <- ifelse(numeric_percent >= 90, "green",
            ifelse(numeric_percent >= 75, "blue",
            ifelse(numeric_percent >= 50, "orange", "red")))
-  
-formatted_output <- sprintf(
-  "<strong><span style='color:%s'>%.1f inches</span></strong><br>
-   Percent of average rain for this date<br>
-   <strong><span style='color:%s'>%s</span></strong><br>",
-  color, precip_value, color, percent_value
-)
-  
-  HTML(formatted_output)
-  
+
+  # Formatted text
+  formatted_output <- sprintf(
+    "<strong><span style='color:%s'>%.1f inches</span></strong><br>
+     Percent of average rain for this date<br>
+     <strong><span style='color:%s'>%s</span></strong><br>",
+    color, precip_value, color, percent_value
+  )
+
+  # Determine image
+  label <- get_waterdrop_label(numeric_percent)
+  file_path <- sprintf("images/waterdrops/waterdrop_%s.png", label)
+
+  image_html <- sprintf(
+    "<div style='margin: 4px 0; line-height: 1;'>
+       <img src='%s' width='220px' style='display: block; margin: 0; padding: 0;' alt='Waterdrop for %s%% precipitation'>
+     </div>", file_path, numeric_percent
+  )
+
+  HTML(paste0(formatted_output, image_html))
+
 } else {
-  cat("Could not extract one or both values.\n")
+  cat("Northern Sierra precipitation data not available.\n")
 }
 ```
 
@@ -267,8 +305,6 @@ formatted_output <- sprintf(
 # Read Central Sierra PDF text
 central_pdf_url <- "https://cdec.water.ca.gov/cgi-progs/products/PLOT_FSI.pdf"
 central_pdf_text <- pdf_text(central_pdf_url)
-
-# Combine all pages
 combined_text <- paste(central_pdf_text, collapse = " ")
 
 # Extract precipitation (inches)
@@ -281,28 +317,38 @@ percent_pattern <- "(?i)Percent of Average for this Date:\\s*(\\d+%)"
 percent_match_text <- regmatches(combined_text, regexpr(percent_pattern, combined_text, perl = TRUE))
 
 if (!is.na(precip_value) && length(percent_match_text) > 0) {
-  
+
   percent_value <- sub(percent_pattern, "\\1", percent_match_text)
   numeric_percent <- as.numeric(str_remove(percent_value, "%"))
-  
-  # Use percent value to choose color
+
+  # Color coding
   color <- ifelse(numeric_percent >= 90, "green",
            ifelse(numeric_percent >= 75, "blue",
            ifelse(numeric_percent >= 50, "orange", "red")))
-  
+
+  # Formatted text
   formatted_output <- sprintf(
     "<strong><span style='color:%s'>%.1f inches</span></strong><br>
      Percent of average rain for this date<br>
      <strong><span style='color:%s'>%s</span></strong><br>",
     color, precip_value, color, percent_value
   )
-  
-  HTML(formatted_output)
-  
-} else {
-  cat("Could not extract one or both values.\n")
-}
 
+  # Determine image
+  label <- get_waterdrop_label(numeric_percent)
+  file_path <- sprintf("images/waterdrops/waterdrop_%s.png", label)
+
+  image_html <- sprintf(
+    "<div style='margin: 4px 0; line-height: 1;'>
+       <img src='%s' width='220px' style='display: block; margin: 0; padding: 0;' alt='Waterdrop for %s%% precipitation'>
+     </div>", file_path, numeric_percent
+  )
+
+  HTML(paste0(formatted_output, image_html))
+
+} else {
+  cat("Central Sierra precipitation data not available.\n")
+}
 ```
 
 #################################################################################### 
