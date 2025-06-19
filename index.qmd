@@ -44,6 +44,12 @@ library(geojsonio)
 
 library(htmltools)
 
+library(gganimate)
+
+library(gifski)
+
+library(ragg)
+
 ```
 
 ```{r}
@@ -60,81 +66,6 @@ library(htmltools)
 # Precipitation
 
 #### Northern Sierra Region Current precipitation {style="color: darkblue"}
-
-```{r}
-
-# # Read PDF text directly from the URL
-# northern_pdf_url <- "https://cdec.water.ca.gov/cgi-progs/products/PLOT_ESI.pdf"
-# northern_pdf_text <- pdf_text(northern_pdf_url)
-# 
-# # Combine all pages into a single string (ensures we search the entire document at once)
-# combined_text <- paste(northern_pdf_text, collapse = " ")
-# 
-# # Define regex pattern to extract the number next to "Current:
-# #"regex (regular expression) pattern is a sequence of characters that define a search pattern for text. to extract the number next to "Current:"
-# 
-# pattern <- "(?i)Current:\\s?(\\d{1,4}(\\.\\d{1,2})?)"  
-# # Explanation:
-# # - (?i) -> Case insensitive search:
-# # - Current: -> Matches "Current:"
-# # - \\s? -> Matches optional whitespace after the word 'current'
-# # - (\\d{1,4}(\\.\\d{1,2})?) -> Captures up to 4 digits (e.g., 12, 1234, or 12.34). Only using 4 digits as it is unlikely to see an average greater than xx.xx inches.
-# 
-# # Extract the first match
-# #combined_text → Contains all the extracted text from the PDF as a single string.
-# #pattern → The regex pattern we created to find the precipitation value.
-# #str_match() → Searches for the first occurrence that matches the pattern and extracts the specific value.
-# 
-# match <- str_match(combined_text, pattern)
-# 
-# # Check if a match was found
-# #the if statement prevents the code from breaking in case there is no match for 'current precipitation' 
-# if (!is.na(match[2])) {
-#   N_sierra_current_precip <- match[2]
-#   cat(paste(N_sierra_current_precip, "inches\n"))
-# } else {
-#   cat("No precipitation data found.\n")
-# }
-
-
-```
-
-```{r}
-# # Create an empty vector to store the extracted value
-# N_sierra_average_precip <- c()
-# 
-# # Extract text from the PDF file
-# #northern_pdf_text <- pdf_text(northern_pdf_file)
-# 
-# # Check if the PDF text is not empty
-# if (length(northern_pdf_text) > 0) {
-#   # Concatenate all the text into a single string
-#   combined_text <- paste(northern_pdf_text, collapse = " ")
-#   
-#   # Define the pattern to match the "Percent of Average for this Date:" followed by the percentage value
-#   pattern <- "(?i)Percent of Average for this Date:\\s*(\\d+%)"
-#   
-#   # Extract the match using regmatches and regexpr
-#   northern_next_four <- regmatches(combined_text, regexpr(pattern, combined_text, perl = TRUE))
-#   
-#   if (length(northern_next_four) > 0) {
-#     # Extract the percentage value using a capturing group
-#     percent_value <- sub("(?i)Percent of Average for this Date:\\s*(\\d+%)", "\\1", northern_next_four)
-#     
-#     # Append the value to the vector
-#     N_sierra_average_precip <- c(N_sierra_average_precip, percent_value)
-#     
-#     # Print only the percentage value
-#     cat(percent_value, "\n")
-#   } else {
-#     cat("Percent of Average for this Date not found.\n")
-#   }
-# } else {
-#   cat("No text extracted from the PDF.\n")
-# }
-
-
-```
 
 ```{r}
 #create bins for which waterdrop image will coorespond to which percentage 
@@ -162,7 +93,6 @@ get_waterdrop_label <- function(percent) {
 }
 
 ```
-
 
 ```{r}
 
@@ -215,89 +145,7 @@ if (!is.na(precip_value) && length(percent_match_text) > 0) {
 }
 ```
 
-
-
 #### Central Sierra Region Current precipitation {style="color: darkblue"}
-
-```{r, echo=FALSE, results='hide', warning=FALSE, message=FALSE}
-
-# #Central Sierra precipitation #Pulling and downloading the pdf from online
-# #URL of pdf file
-# 
-# 
-# # URL of the PDF file
-# central_ppt_pdf_url <- "https://cdec.water.ca.gov/cgi-progs/products/PLOT_FSI.pdf"
-# 
-# # Read PDF text directly from the URL
-# central_pdf_text <- pdf_text(central_ppt_pdf_url)
-# 
-# # Print the extracted text (for debugging)
-# print(central_pdf_text)
-
-
-```
-
-```{r}
-# # Create an empty vector
-# Central_current_precip <- c()
-# 
-# # Adjusted pattern for "Current:"
-# if (length(central_pdf_text) > 0) {
-#   for (sentence in central_pdf_text) {
-#     # Pattern to match "Current:" and capture the 4 characters after it
-#     pattern <- "(?i)Current[:\\s]+(.{4})"
-#     
-#     # Extract the matched text
-#     next_four <- regmatches(sentence, regexpr(pattern, sentence, perl = TRUE))
-#     
-#     if (length(next_four) > 0) {
-#       # Extract only the captured group (the 4 characters) and not "Current:"
-#       number_only <- sub(pattern, "\\1", next_four)
-#       
-#       # Append the value of number_only to the vector
-#       Central_current_precip <- c(Central_current_precip, number_only)
-#       
-#       # Print only the number
-#       cat(paste(number_only, "inches\n"))
-#     } else {
-#       cat("Next four characters after 'Current:' not found.\n")
-#     }
-#   }
-# } else {
-#   cat("No text extracted from the PDF.\n")
-# }
-
-
-```
-
-
-```{r}
-
-# #Central Sierra #PUlling out Percent average
-# 
-# #create an empty vector
-# Central_average_precip <- c()
-# 
-# # Adjusted pattern for "Percent of Average for this Date:"
-# if (length(central_pdf_text) > 0) {
-#   for (sentence in central_pdf_text) {
-#     pattern <- "(?i)Percent of Average for this Date[:\\s]+(.{4})"
-#     next_four <- regmatches(sentence, regexpr(pattern, sentence, perl = TRUE))
-#     if (length(next_four) > 0) {
-#       # Append the value of next_four to the vector
-#       Central_average_precip <- c(Central_average_precip, next_four)
-#       cat(paste(next_four, "\n"))
-#     } else {
-#       cat("Next four characters after 'Percent of Average for this Date:' not found.\n")
-#     }
-#   }
-# } else {
-#   cat("No text extracted from the PDF.")
-# }
-# 
-# 
-# 
-```
 
 ```{r}
 
@@ -653,11 +501,10 @@ if (length(statewide_percentages) >= 2) {
 
 ```
 
-
 # Reservoir Storage
 
 ```{r}
-file.exists("geo_files/legal_delta.geojson")
+#file.exists("geo_files/legal_delta.geojson")
 # Load the Legal Delta boundary (replace with your actual file path)
 legal_delta_boundary <- geojson_read("geo_files/legal_delta.geojson", what = "sp")
 
@@ -678,7 +525,7 @@ leaflet() %>%
 
 ```
 
-##### shaded area on map is the legal delta
+##### Shaded area on map is the legal delta. Points are reservoir locations
 
 ```{r, echo=FALSE, results='hide', warning=FALSE, message=FALSE}
 
@@ -779,6 +626,57 @@ leaflet() %>%
              
 
 
+```
+
+
+
+```{r}
+
+# Your reservoir data (dynamically pulled earlier)
+reservoirs <- tibble(
+  Reservoir = c("Shasta", "Oroville", "San Luis"),
+  `Percent of Capacity` = c(
+    shasta_percent_capacity_value,
+    oroville_percent_capacity_value,
+    SanLuis_percent_capacity_value
+  ),
+  `Percent of Average` = c(
+    shasta_percent_average_storage_value,
+    oroville_percent_average_storage_value,
+    SanLuis_percent_average_storage_value
+  )
+)
+
+# Reshape to long format
+reservoirs_long <- pivot_longer(reservoirs, -Reservoir, names_to = "Metric", values_to = "Percent")
+
+# Assign text colors based on "Percent of Average" values only
+reservoirs_long <- reservoirs_long %>%
+  mutate(text_color = case_when(
+    Metric == "Percent of Average" & Percent >= 90 ~ "darkgreen",
+    Metric == "Percent of Average" & Percent >= 75 ~ "blue",
+    Metric == "Percent of Average" & Percent >= 50 ~ "orange",
+    Metric == "Percent of Average" ~ "red",
+    TRUE ~ "black"  # Keep other metrics (like Capacity) with default text color
+  ))
+
+# Plot
+ggplot(reservoirs_long, aes(x = Reservoir, y = Percent, fill = Metric)) +
+  geom_col(position = position_dodge(width = 0.6), width = 0.6) +
+  geom_text(aes(label = paste0(Percent, "%"), color = text_color, group = Metric),
+            position = position_dodge(width = 0.6),
+            vjust = -0.5,
+            size = 4,
+            fontface = "bold",  # <-- this makes it bold
+            show.legend = FALSE) +
+  scale_color_identity() +
+  labs(
+    title = "Reservoir Percent Average Storage and Capacity",
+    y = "Percent of average for this Date",
+    x = ""
+  ) +
+  theme_minimal(base_size = 14) +
+  scale_fill_manual(values = c("steelblue", "forestgreen"))
 ```
 
 #### Sacramento River at Freeport
@@ -887,7 +785,6 @@ suppressMessages({
 
 ```
 
-
 ```{r}
 
 #Sacramento River at Hood (station code SRH) #When run, will automatically update for current month
@@ -918,7 +815,6 @@ sac_salinity_formatted<-sprintf("Average monthly salinity for %s is %.2f µS/cm 
 
 HTML(sac_salinity_formatted)
 ```
-
 
 #### San Joaquin River at Vernalis
 
@@ -1198,7 +1094,6 @@ HTML(delta_export_formatted)
 
 ```
 
-
 ```{r}
 #Salinity at Banks pumping plant (station code - HBP) #When run, will automatically update for current month
 
@@ -1241,22 +1136,21 @@ HTML(banks_salinity_formatted)
 ```{r}
 # I want to put the color coding for the sets of numbers here
 
-# Define the ranges with actual numeric values
-ranges <- c("<span style='color:red'>50%</span>", 
-            "<span style='color:orange'>50-74%</span>", 
-            "<span style='color:blue'>75-90%</span>", 
-            "<span style='color:green'>>90%</span>")
 
-# Create the inline HTML string with color-coded numbers
-html_string <- paste(ranges, collapse = "  ")
+HTML("
+<div style='margin-top: 16px; font-weight: bold;'>
+  Percent of 20-year flow average:
+  <br>
+  <span style='color:red'>50%</span> 
+  <span style='color:orange'>50–74%</span> 
+  <span style='color:blue'>75–90%</span> 
+  <span style='color:green'>>90%</span>
+</div>
+")
 
-# Render as raw HTML in Quarto
-cat(html_string)
 
 
 ```
-
-
 
 # TEMPERATURE
 
